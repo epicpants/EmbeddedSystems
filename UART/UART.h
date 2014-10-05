@@ -1,3 +1,9 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: UART.h
+ * Brief: function prototype for UART initialization along with 
+ * UART constants and baud rate calculations
+ */
 #include <Main.h>
 #include <PORT.h>
 

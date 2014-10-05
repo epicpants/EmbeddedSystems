@@ -56,8 +56,8 @@ sbit GREENLED = P2^6;
 sbit REDLED = P2^7;
 
 // Port 3
-sbit TxD_pin = P3^0;
-sbit RxD_pin = P3^1;
+sbit TxD_pin = P3^1;
+sbit RxD_pin = P3^0;
 /*sbit P3_2 = P3^2;
 sbit P3_3 = P3^3;
 sbit P3_4 = P3^4;
