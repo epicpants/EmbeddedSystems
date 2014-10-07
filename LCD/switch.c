@@ -68,3 +68,27 @@ bit SWITCH4_GET_INPUT(uint8 DEBOUNCE_PERIOD)
 	}
 	return RETURN_VALUE;
 }
+
+void CHECK_SWITCH_STATES(uint8 * array_sw_states, uint8 * array_sw_held)
+{
+	array_sw_states[0] = SWITCH1_GET_INPUT(DEBOUNCE_TIME);
+	if(array_sw_states[0] == SWITCH_NOT_PRESSED)
+	{
+		array_sw_held[0] = NO;
+	}
+	array_sw_states[1] = SWITCH2_GET_INPUT(DEBOUNCE_TIME);
+	if(array_sw_states[1] == SWITCH_NOT_PRESSED)
+	{
+		array_sw_held[1] = NO;
+	}
+	array_sw_states[2] = SWITCH3_GET_INPUT(DEBOUNCE_TIME);
+	if(array_sw_states[2] == SWITCH_NOT_PRESSED)
+	{
+		array_sw_held[2] = NO;
+	}
+	array_sw_states[3] = SWITCH4_GET_INPUT(DEBOUNCE_TIME);
+	if(array_sw_states[3] == SWITCH_NOT_PRESSED)
+	{
+		array_sw_held[3] = NO;
+	}
+}

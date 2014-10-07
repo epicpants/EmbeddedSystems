@@ -50,4 +50,5 @@ void LCD_Print(uint8 num_bytes, uint8 * array_name)
 			value = *(array_name + index + 1);
 		}
 	}
+	Delay_ms(1); // necessary?
 }
