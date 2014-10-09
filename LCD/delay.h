@@ -1,3 +1,8 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: UART.h
+ * Brief: Function prototype for delay routine 
+ */
 #ifndef _DELAY_H
 #define _DELAY_H
 

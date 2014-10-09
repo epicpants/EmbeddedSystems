@@ -1,3 +1,8 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: LCD.h
+ * Brief: Function prototypes for basic LCD functions 
+ */
 #ifndef _LCD_H
 #define _LCD_H
 #include <Main.h>

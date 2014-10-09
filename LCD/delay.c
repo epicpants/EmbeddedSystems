@@ -1,5 +1,16 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: delay.c
+ * Brief: Delay routine to wait x milliseconds 
+ */
 #include <delay.h>
 
+/***********************************************************************
+DESC:  Blocks microcontroller for specified number of milliseconds
+INPUT: timeout value
+RETURNS: void
+CAUTION: 
+************************************************************************/
 void Delay_ms(uint32 timeout_val_ms)
 {
 	uint32 millisec;

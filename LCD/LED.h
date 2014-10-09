@@ -1,3 +1,8 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: LED.h
+ * Brief: Function prototypes for LED operations 
+ */
 #ifndef _LED_H
 #define _LED_H
 
@@ -12,5 +17,5 @@
 
 uint8 LED_Change_State(uint8 current_state, bit DIRECTION);
 bit CHECK_LED_DIRECTION(uint8 * array_sw_states, uint8 * array_sw_held, bit CURRENT_DIRECTION);
-uint8 CHECK_LED_SPEED(uint8 * array_sw_states, uint8 * array_sw_held, uint8 current_speed);
+uint16 CHECK_LED_SPEED(uint8 * array_sw_states, uint8 * array_sw_held, uint16 current_speed);
 #endif
