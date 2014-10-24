@@ -1,0 +1,14 @@
+.gitignore
+**.OBJ
+**.LST
+**.M51
+**.Opt
+**.Uv2
+**_i
+**.lnp
+**.plg
+**.Bak
+**.A51
+**.db
+**.hex
+**LCD
