@@ -1,31 +1,7 @@
 //SD Card Routines
 
 #include <SPI.h>
-#define NO_ERRORS (0)
-#define IDLE_STATE (1)
-#define ILLEGAL_COMMAND (4)
-#define TIMEOUT_ERROR (71)
-#define BAD_CRC (72)
-#define VOLTAGE_NOT_SUPPORTED (73)
-#define BAD_VALUE (74)
-#define CMD0 (0)
-#define CMD0_ARGUMENT(0x00000000)
-#define CMD8 (8)
-#define CMD8_ARGUMENT (0x000001AA) //CRC7 for this is: 0x87 (1 appended for stop bit on end)
-#define CMD8_CRC (0x87)
-#define CMD41 (41)
-#define CMD41_ARGUMENT_V2 (0x40000000)
-#define CMD55 (55)
-#define CMD55_ARGUMENT (0x00000000)
-#define CMD58 (58)
-#define SIZE_OF_R1 (1)
-#define SIZE_OF_R3 (5)
-#define SIZE_OF_R7 (5)
-#define DATA_START_TOKEN (0xFE)
-
-
-uint8 send_command(uint8 command, uint32 argument);
-uint8 receive_response(uint8 number_of_bytes, uint8* array_name);
+#include <SD.h>
 
 //SD Card initialization function.
 //errorStatus will be set to a non-zero number and returned if there are any issues.
@@ -109,8 +85,10 @@ uint8 SD_Card_init()
 				errorStatus = array_out[0];
 			}
 
-			for(index = 0; index < SIZE_OF_R7) // Reset array_out for use later.
+			for(index = 0; index < SIZE_OF_R7; index++) // Reset array_out for use later.
+			{
 				array_out[index] = 0;
+			}
 				
 		}
 		else if(errorStatus == NO_ERRORS)//Error that is not illegal command:
@@ -136,7 +114,7 @@ uint8 SD_Card_init()
 			errorFlag = receive_response(SIZE_OF_R3, array_out);
 			nCS0 = 1;
 			
-			if(errorFlag != NO_ERROR)
+			if(errorFlag != NO_ERRORS)
 			{
 				errorStatus = errorFlag;
 			}
@@ -196,8 +174,8 @@ uint8 SD_Card_init()
 				}
 			}
 			timeout++;
-		}while((array_out[0] == IDLE_STATE) && (timeout != 0) && (errorStatus == NO_ERRORS))
-
+		}while((array_out[0] == IDLE_STATE) && (timeout != 0) && (errorStatus == NO_ERRORS));
+		
 		nCS0 = 1;
 		if(array_out[0] != 0)
 		{
@@ -223,7 +201,7 @@ uint8 SD_Card_init()
 				errorFlag = receive_response(SIZE_OF_R3, array_out);
 				nCS0 = 1;
 				
-				if(errorFlag != NO_ERROR)
+				if(errorFlag != NO_ERRORS)
 				{
 					errorStatus = errorFlag;
 				}
@@ -244,6 +222,7 @@ uint8 SD_Card_init()
 			nCS0 = 1; //There is a chance setting above will not happen.
 			for(index = 0; index < SIZE_OF_R3; index++)
 				array_out[index] = 0;
+		}
 	}
 	printf("Exiting SD_Card_init, errorStatus is %i.\n");
 	return errorStatus;
@@ -255,13 +234,15 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 {
 	uint16 index;
 	uint16 timeout;
-	uint16 SPI_return;
+	uint16 SPI_Return;
 	uint8 errorStatus;
 	uint8 errorFlag;
-	uint8 data;
+	uint8 dat;
+	uint8 array_out[5];
+
 	errorStatus = 0;
 	errorFlag = 0;
-	uint8 array_out[5];
+	
 	printf("Beginning read_block...\n");
 	for(index = 0; index < 5; index++)
 	{
@@ -287,9 +268,9 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 		{
 			SPI_Return = SPI_Transfer(0xFF);
 			errorFlag = (SPI_Return >> 8);
-			data = (SPI_Return & 0x00FF);
+			dat = (SPI_Return & 0x00FF);
 			timeout++;
-		} while((timeout != 0) && (data == 0xFF) && (errorFlag == NO_ERRORS));
+		} while((timeout != 0) && (dat == 0xFF) && (errorFlag == NO_ERRORS));
 
 		if(timeout == 0) //Error handling:
 		{
@@ -299,11 +280,11 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 		{
 			errorStatus = errorFlag;
 		}
-		else if((data & 0xF0) == 0x00)
+		else if((dat & 0xF0) == 0x00)
 		{
-			errorStatus = data;
+			errorStatus = dat;
 		}
-		else if(data != DATA_START_TOKEN) 
+		else if(dat != DATA_START_TOKEN) 
 		{
 			errorStatus = BAD_VALUE;
 		}
@@ -314,14 +295,14 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 			{
 				SPI_Return = SPI_Transfer(0xFF);
 				errorFlag = (SPI_Return >> 8);
-				data = (SPI_Return & 0x00FF);
+				dat = (SPI_Return & 0x00FF);
 				if(errorFlag != NO_ERRORS)
 				{
 					errorStatus = errorFlag;
 				}
 				else
 				{
-					array[index] = data;
+					array[index] = dat;
 				}
 			}
 
