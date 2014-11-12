@@ -231,7 +231,26 @@ uint32 Read_Dir_Entry(uint32 Sector_num, uint16 Entry, uint8 xdata * array_in)
    return return_clus;
 }
 
+//This function will return the first sector in a cluster.
+//If cluster_num is 0 it will return FirstRootDirSec_g.
+uint32 First_Sector (uint32 Cluster_num)
+{
+	uint32 returnVal;
 
 
+	returnVal = 0;
+	if(Cluster_num == 0)
+	{
+		returnVal = FirstRootDirSec_g;
+	}
+	else
+	{
+		returnVal = ((Cluster_num - 2) * BPB_SecPerClus) + FirstDataSector;
+	}
+
+
+
+
+}
 
 
