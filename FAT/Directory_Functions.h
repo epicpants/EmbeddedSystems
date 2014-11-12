@@ -14,6 +14,13 @@
 #define no_entry_found (0x80000000)  // msb set to indicate error
 #define directory_bit  (0x10000000)  // lsb of first nibble (bit28)
 
+
+uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
+uint16 idata BytesPerSec_g;
+uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+
+
+
 // ------ Public function prototypes -------------------------------
 //uint8 read8(uint16 offset, uint8 * array_name);
 

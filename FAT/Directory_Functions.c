@@ -7,17 +7,7 @@
 #include "SD.h"
 #include "Directory_Functions.h"
 #include "print.h"
-#include "File_System.h"
-
-uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
-uint16 idata BytesPerSec_g;
-uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
-
-
-
-
-
-
+#include "FAT.h"
 
 
 
@@ -53,7 +43,7 @@ uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
    AMBERLED=0;
    nCS0=0;
    error_flag=send_command(17,(Sector<<SDtype_g));
-   if(error_flag==NO_ERRORS) error_flag=read_block(values,512);
+   if(error_flag==NO_ERRORS) error_flag=read_block(512, values);
    nCS0=1;
    AMBERLED=1;
    if(error_flag==NO_ERRORS)
@@ -106,9 +96,9 @@ uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
           if((Sector-Sector_num)<max_sectors)
 		  {
               nCS0=0;
-              error_flag=SEND_COMMAND(17,(Sector<<SDtype_g));
-              if(error_flag==no_errors) error_flag=read_block(values,512);
-			  if(error_flag!=no_errors)
+              error_flag=send_command(17,(Sector<<SDtype_g));
+              if(error_flag==NO_ERRORS) error_flag=read_block(512, values);
+			  if(error_flag!=NO_ERRORS)
 			    {
 			      entries=0;   // no entries found indicates disk read error
 				  temp8=0;     // forces a function exit
@@ -165,9 +155,9 @@ uint32 Read_Dir_Entry(uint32 Sector_num, uint16 Entry, uint8 xdata * array_in)
    Sector=Sector_num;
    nCS0=0;
    error_flag=send_command(17,(Sector<<SDtype_g));
-   if(error_flag==no_errors)  error_flag=read_block(values,512);
+   if(error_flag==NO_ERRORS)  error_flag=read_block(512, values);
    nCS0=1;
-   if(error_flag==no_errors)
+   if(error_flag==NO_ERRORS)
    {
      do
      {
@@ -205,10 +195,10 @@ uint32 Read_Dir_Entry(uint32 Sector_num, uint16 Entry, uint8 xdata * array_in)
 		   if((Sector-Sector_num)<max_sectors)
 		   {
               nCS0=0;
-              error_flag=SEND_COMMAND(17,(Sector<<SDtype_g));
-              if(error_flag==no_errors)  error_flag=read_block(values,512);
+              error_flag=send_command(17,(Sector<<SDtype_g));
+              if(error_flag==NO_ERRORS)  error_flag=read_block(512, values);
               nCS0=1;
-			  if(error_flag!=no_errors)
+			  if(error_flag!=NO_ERRORS)
 			  {
 			     return_clus=no_entry_found;
                  temp8=0; 
