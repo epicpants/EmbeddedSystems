@@ -1,5 +1,16 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: SPI.c
+ * Brief: function definitions for SPI initialization and communication
+ */
 #include <SPI.h>
 
+/***********************************************************************
+DESC:  Initializes SPI Master to specified clock rate
+INPUT: desired clock rate (clock_rate)
+RETURNS: uint8 for error checking - either INIT_OK or INIT_ERR
+CAUTION: 
+************************************************************************/
 uint8 SPI_Master_Init(uint32 clock_rate)
 {
 	uint8 divider, return_val;
@@ -7,6 +18,11 @@ uint8 SPI_Master_Init(uint32 clock_rate)
 	divider = (uint8)(((OSC_FREQ / OSC_PER_INST) * 6) / clock_rate);
 	SPCON |= 0x70; // Set SPEN, SSDIS, and MSTR
 	SPCON &= 0xF3; // Clear CPOL and CPHA
+	
+	/*
+	 * Use divider to set/clear SPR2, SPR1, and SPR0 bits
+	 * in SPCON
+	 */
 	if(divider > 128)
 	{
 		return_val = INIT_ERR;
@@ -48,6 +64,13 @@ uint8 SPI_Master_Init(uint32 clock_rate)
 	return return_val;
 }
 
+/***********************************************************************
+DESC:  Transfers data to SPI
+INPUT: byte of data to send (send_value)
+RETURNS: 2 bytes, upper byte contains error bits for checking
+		lower byte contains data response
+CAUTION: 
+************************************************************************/
 uint16 SPI_Transfer(uint8 send_value)
 {
 	uint8 test;
@@ -74,6 +97,12 @@ uint16 SPI_Transfer(uint8 send_value)
 	return data_output;
 }
 
+/***********************************************************************
+DESC:  Sends command and argument to SPI
+INPUT: one byte command number and 4 byte argument
+RETURNS: one byte error status (NO_ERRORS, SPI_ERROR, ILLEGAL_COMMAND)
+CAUTION: 
+************************************************************************/
 uint8 send_command(uint8 command, uint32 argument)
 {
 	uint8 SPI_send, return_val;
@@ -173,6 +202,13 @@ uint8 send_command(uint8 command, uint32 argument)
 	return return_val;
 }
 
+/***********************************************************************
+DESC:  Gets response from SPI
+INPUT: number of bytes to be received, array of bytes for responses
+RETURNS: one byte for error status (NO_ERRORS, SPI_ERROR, TIMEOUT_ERROR)
+		populates array_name with responses
+CAUTION: 
+************************************************************************/
 uint8 receive_response(uint8 number_of_bytes, uint8 * array_name)
 {
 	uint8 index, dat, error_val, return_val;

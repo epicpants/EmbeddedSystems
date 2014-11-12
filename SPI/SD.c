@@ -1,16 +1,25 @@
-//SD Card Routines
-
-#include <SPI.h>
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: SD.c
+ * Brief: function definitions of SD Card initialization and memory block reading
+ */
 #include <SD.h>
+#include <SPI.h>
+#include <PORT.H>
 
-//SD Card initialization function.
-//errorStatus will be set to a non-zero number and returned if there are any issues.
+/***********************************************************************
+DESC:  Initializes SD Card
+INPUT: None
+RETURNS: one byte error status (NO_ERRORS, VOLTAGE_NOT_SUPPORTED,
+		CARD_NOT_SUPPORTED, TIMEOUT_ERROR, ILLEGAL_COMMAND, SPI_ERROR)
+CAUTION: 
+************************************************************************/
 uint8 SD_Card_init()
 {
 	uint8 index;
 	uint8 errorFlag = 0;
 	uint8 errorStatus = 0;
-	uint8 array_out[5];
+	uint8 array_out[6];
 	uint16 timeout;
 
 	for(index = 0; index < 5; index++) //Initialize the array_out values.
@@ -69,8 +78,14 @@ uint8 SD_Card_init()
 			else if(array_out[0] == IDLE_STATE) //Received good response:
 			{
 				printf("Received \"Idle state response.\"(good)\n");
-				if(array_out[4] != CMD8_CRC)
+				if(array_out[4] != CMD8_CHECK_PATTERN)
 				{
+					printf("Received BAD_CRC\n");
+					for(index = 0; index < 6; index++)
+					{
+						printf("%2.2bx ", array_out[index]);
+					}
+					printf("\n");
 					errorStatus = BAD_CRC;
 				}
 
@@ -209,14 +224,17 @@ uint8 SD_Card_init()
 				{
 					errorStatus = errorFlag;
 				}
+				
 				else if((array_out[1] & 0x80) && (array_out[1] & 0x40)) //If OCR and CCS bits are set, this is an SDHC card.
 				{
-					SD_Card_type = SDHC;
+					//SD_Card_type = SDHC;
 				}
 				else if((array_out[1] & 0x80)) //If only OCR bit is set, this is an SD card
 				{
-					SD_Card_type = SD;
-				}													   
+					//SD_Card_type = SD;
+					errorStatus = CARD_NOT_SUPPORTED;
+				}
+																	   
 				
 			}
 			nCS0 = 1; //There is a chance setting above will not happen.
@@ -224,12 +242,17 @@ uint8 SD_Card_init()
 				array_out[index] = 0;
 		}
 	}
-	printf("Exiting SD_Card_init, errorStatus is %i.\n");
+	printf("Exiting SD_Card_init, errorStatus is %2.2bx.\n", errorStatus);
 	return errorStatus;
 }
 
-
-
+/***********************************************************************
+DESC:  Reads a block of SD Card memory
+INPUT: number of bytes to be read, array of bytes to put read block in
+RETURNS: one byte error status (NO_ERRORS, TIMEOUT_ERROR, BAD_VALUE)
+		populates array with number_of_bytes bytes of SD Card memory
+CAUTION: 
+************************************************************************/
 uint8 read_block(uint16 number_of_bytes, uint8* array)
 {
 	uint16 index;
@@ -299,6 +322,7 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 				if(errorFlag != NO_ERRORS)
 				{
 					errorStatus = errorFlag;
+					printf("Error received: %2.2bx",errorStatus); 
 				}
 				else
 				{
@@ -314,6 +338,6 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 			  	
 		}
 	}
-	printf("Exiting read_block, error status is %i.\n",errorStatus); 
+	printf("Exiting read_block, error status is %2.2bx.\n",errorStatus); 
 	return errorStatus;
 }

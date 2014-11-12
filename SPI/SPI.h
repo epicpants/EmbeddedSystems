@@ -1,3 +1,8 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: SPI.h
+ * Brief: function prototypes for SPI initialization and communication
+ */
 #ifndef _SPI_H
 #define _SPI_H
 
