@@ -1,4 +1,9 @@
 #include "FAT.h"
+#include "SD.h"
+#include "SPI.h"
+#include "PORT.h"
+#include "Directory_Functions.h"
+#include <stdio.h>
 
 uint8 read8(uint16 offset, uint8 * array_name)
 {

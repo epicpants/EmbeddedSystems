@@ -4,13 +4,13 @@
  * Brief: Entry point for the program. Initializes SD Card communication and 
  * allows user to view SD Card memory contents via UART in 512 byte blocks
  */
-#include <main.h>
-#include <UART.h>
+#include "main.h"
+#include "UART.h"
 #include <stdio.h>
-#include <SD.h>
-#include <SPI.h>
-#include <Serial_In.h>
-#include <print.h>
+#include "SD.h"
+#include "SPI.h"
+#include "Serial_In.h"
+#include "print.h"
 
 
 void main(void)

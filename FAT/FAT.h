@@ -2,11 +2,7 @@
 #define FAT_H
 
 #include "Main.h"
-#include "SD.h"
-#include "SPI.h"
-#include "PORT.h"
-#include "Directory_Functions.h"
-#include <stdio.h>
+
 
 #define JUMP_INST1 (0xEB)
 #define JUMP_INST2 (0xE9)

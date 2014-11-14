@@ -7,7 +7,7 @@
 #define _SD_H
 
 #include <stdio.h>
-#include <Main.h>
+#include "Main.h"
 
 #define UNKNOWN_TYPE (0)
 #define SD (1)
@@ -17,6 +17,7 @@
 #define VOLTAGE_NOT_SUPPORTED (73)
 #define BAD_VALUE (74)
 #define CMD0 (0)
+#define CMD17 (17)
 #define CMD0_ARGUMENT (0x00000000)
 #define CMD8 (0x08)
 #define CMD8_ARGUMENT (0x000001AA) //CRC7 for this is: 0x87 (1 appended for stop bit on end)

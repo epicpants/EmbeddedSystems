@@ -5,7 +5,7 @@
  * via UART
  */
 #include <stdio.h>
-#include <print.h>
+#include "print.h"
 
 /***********************************************************************
 DESC:  Prints a line of memory contents via UART

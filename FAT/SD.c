@@ -3,9 +3,9 @@
  * File: SD.c
  * Brief: function definitions of SD Card initialization and memory block reading
  */
-#include <SD.h>
-#include <SPI.h>
-#include <PORT.H>
+#include "SD.h"
+#include "SPI.h"
+#include "PORT.H"
 
 /***********************************************************************
 DESC:  Initializes SD Card

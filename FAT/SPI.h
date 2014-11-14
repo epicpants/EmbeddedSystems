@@ -6,7 +6,7 @@
 #ifndef _SPI_H
 #define _SPI_H
 
-#include <Main.h>
+#include "Main.h"
 
 #define INIT_OK (0)
 #define INIT_ERR (1)

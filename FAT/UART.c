@@ -4,7 +4,7 @@
  * Brief: function definition of UART initialization
  */
 #include <UART.h>
-#include <AT89C51RC2.h>
+#include "AT89C51RC2.h"
 
 /***********************************************************************
 DESC:  Initializes SFRs in the 8051 to set up UART communication

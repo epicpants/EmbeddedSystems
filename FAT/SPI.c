@@ -3,7 +3,7 @@
  * File: SPI.c
  * Brief: function definitions for SPI initialization and communication
  */
-#include <SPI.h>
+#include "SPI.h"
 
 /***********************************************************************
 DESC:  Initializes SPI Master to specified clock rate

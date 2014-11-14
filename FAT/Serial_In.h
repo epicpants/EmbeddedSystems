@@ -7,8 +7,13 @@
 #define BS (0x08)
 #define space (0x20)
 #define DEL (0x7F)
-#define LF (0x0A)
-#define CR (0x0D)
+
+#ifndef CR
+#define CR (0x0D) // Carriage return in hex
+#endif
+#ifndef LF
+#define LF (0x0A) // Line feed in hex
+#endif
 // ------ Public function prototypes -------------------------------
 
 uint32 long_serial_input(void);
