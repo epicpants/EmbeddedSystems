@@ -11,6 +11,8 @@
 
 
 
+
+
 /***********************************************************************
 DESC: Prints all short file name entries for a given directory 
 INPUT: Starting Sector of the directory and the pointer to a 
@@ -221,7 +223,69 @@ uint32 Read_Dir_Entry(uint32 Sector_num, uint16 Entry, uint8 xdata * array_in)
    return return_clus;
 }
 
+//This function will return the first sector in a cluster.
+//If cluster_num is 0 it will return FirstRootDirSec_g.
+uint32 First_Sector (uint32 Cluster_num)
+{
+	uint32 returnVal;
 
+	if(Cluster_num == 0)
+	{
+		returnVal = FirstRootDirSec_g;
+	}
+	else
+	{
+		returnVal = ((Cluster_num - 2) * SecPerClus_g) + FirstDataSec_g;
+	}
 
+	return returnVal;
+}
 
+//This function will find the next cluster # of a file.
+//The first sector of that cluster is loaded into array_name.
+uint32 Find_Next_Clus(uint32 Cluster_num, uint8 xdata * array_name)
+{
+	uint32 returnVal;
+	uint32 thisFatSecNum;
+	uint32 thisFatEntOffset;
+	uint32 FAToffset;
+	uint 8 errorVal;
+	
+	errorVal = 0;
+	returnVal = 0;
 
+	thisFatSecNum = StartofFAT_g + ((Cluster_num * FATtype_g) / BytesPerSec); //FATtype_g should be: 4 for FAT32, 2 for FAT16.
+	
+	//Reading in first sector of next cluster:
+	nCS0 = 0;
+	errorVal = send_command(CMD17, thisFatSecNum);
+	if(errorVal != NO_ERRORS)
+	{
+		printf("Error sending CMD17 in Find_Next_Clus: %2.2BX.\n", errorVal);
+		nCS0 = 1;
+		return 0;
+	}
+
+	errorVal = read_block(BytesPerSec_g, array_name);
+	nCS0 = 1;
+	if(errorVal != NO_ERRORS)
+	{
+		printf("Error reading block in Find_Next_Clus.\nSector Number %i.\nErrorVal: %2.2BX.\n", thisFatSecNum, errorVal);
+		return 0;
+	}
+	
+	FAToffset = Cluster_num * FATtype_g;  //FATtype_g should be 4 for FAT32.
+	thisFatEntOffset = FAToffset % BytesPerSec_g;
+
+	if(FATtype_g == FAT32)
+	{
+		returnVal = read32(thisFatEntOffset, array_name);
+		returnVal = (returnVal & 0x0fffffff); // Top 4 bits must be masked because only lower 28 bits are used.
+	}
+	else if(FATtype_g == FAT16)
+	{
+		returnVal = (uint32)read16(thisFatEntOffset, array_name);
+	}
+
+	return returnVal;
+}

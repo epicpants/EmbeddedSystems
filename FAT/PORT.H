@@ -22,6 +22,7 @@
 
 #ifndef _PORT_H
 #define _PORT_H
+#include <AT89C51RC2.h>
 
 // ------ Dinosaur.C ----------------------------------------------
 // Ports 1 and 2 used for demo...
