@@ -26,13 +26,6 @@ extern uint8 SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
 
 
 // ------ Public function prototypes -------------------------------
-//uint8 read8(uint16 offset, uint8 * array_name);
-
-//uint16 read16(uint16 offset, uint8 * array_name);
-
-//uint32 read32(uint16 offset, uint8 * array_name);
-
-//uint8 Mount_Drive(uint8 xdata * array_name);
 
 //This function will return the first sector in a cluster.
 //If cluster_num is 0 it will return FirstRootDirSec_g.

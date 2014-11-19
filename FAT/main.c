@@ -23,7 +23,7 @@ void main(void)
 
 	REDLED = 0;	// Insanity check
 	AUXR = 0x0C; // Allows use of 1 KB of RAM
-	for(i = 0; i < 512; i++)
+	for(i = 0; i < 512; i++) // Initializing the block_data.
     {
 		block_data[i] = 0;
 	}
@@ -36,7 +36,7 @@ void main(void)
 	SD_Card_init();
 	printf("Initializing SPI Master to 5 MHz\n");
 	GREENLED = 0;
-	error_val = SPI_Master_Init(1000000UL);
+	error_val = SPI_Master_Init(5000000UL);
 	printf("SPI Init error_val: %2.2BX\n", error_val);
 	YELLOWLED = 0;
 	printf("Mounting drive...\n");

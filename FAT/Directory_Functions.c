@@ -21,9 +21,6 @@ block of memory in xdata that can be used to read blocks from the SD card
 RETURNS: Uint16 number of entries found in the directory
 CAUTION: Supports FAT16, SD_shift must be set before using this function
 ************************************************************************/
-
-
-
 uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
 { 
    uint32 Sector, max_sectors;
@@ -292,12 +289,14 @@ uint32 Find_Next_Clus(uint32 Cluster_num, uint8 xdata * array_name)
 	return returnVal;
 }
 
+//This function will return the 8 bit value at offset in array_name.
 uint8 read8(uint16 offset, uint8 xdata * array_name)
 {
 	uint8 return_val = array_name[offset];
 	return return_val;
 }
 
+//This function will return the 16 bit value (Little Endian) at offset in array_name.
 uint16 read16(uint16 offset, uint8 xdata * array_name)
 {
 	uint16 return_val = 0;
@@ -311,6 +310,7 @@ uint16 read16(uint16 offset, uint8 xdata * array_name)
 	return return_val;
 }
 
+//This function will return the 32 bit value (Little Endian) at offset in array_name.
 uint32 read32(uint16 offset, uint8 xdata * array_name)
 {
 	uint32 idata return_val = 0;
@@ -326,6 +326,8 @@ uint32 read32(uint16 offset, uint8 xdata * array_name)
 	return return_val;
 }
 
+//This function will mount an SD drive. It is only valid for FAT32. It will initialize all of the globals
+//  that are declared at the top of this file.
 uint8 mount_drive(uint8 xdata * array_name)
 {
 	uint32 block_num, TotSec32, RootClus, FATSz32, FATSz, DataSec, CountofClus, TotSec, RelSec;
@@ -336,40 +338,40 @@ uint8 mount_drive(uint8 xdata * array_name)
 	block_num = 0;
 	RelSec = 0;
 	nCS0 = 0;
-	error_val = send_command(CMD17, block_num);
+	error_val = send_command(CMD17, block_num); //sending command to read the sector at 0.
 	if(error_val == NO_ERRORS)
 	{
 		
-		error_val = read_block(512, array_name);
+		error_val = read_block(512, array_name);//reading in data.
 		if(error_val == NO_ERRORS)
 		{
 			offset = 0;
-			value8 = read8(offset, array_name);
-			if(value8 != JUMP_INST1 && value8 != JUMP_INST2)
+			value8 = read8(offset, array_name);//Check the value at offset 0 to see if it is a jump instruction:
+			if(value8 != JUMP_INST1 && value8 != JUMP_INST2) //If it is not a jump instruction:
 			{
-				offset = 0x01c6;
+				offset = 0x01c6; //read in the 32 bit value at 0x01C6:
 				printf("OFFSET = %u\n", offset);
 				block_num = read32(offset, array_name);
 				RelSec = block_num;
 				printf("block_num: %lu\n", block_num);
-				error_val = send_command(17, block_num);
+				error_val = send_command(17, block_num); //send command to read in the sector that is specified by the 32 bit value at offset.
 				if(error_val == NO_ERRORS)
 				{
-					error_val = read_block(512, array_name);
+					error_val = read_block(512, array_name); // Read in data at sector.
 					if(error_val == NO_ERRORS)
 					{
 						offset = 0;
-						value8 = read8(offset, array_name);
+						value8 = read8(offset, array_name); //Make sure there is a jump instruction at the first block:
 						if(value8 != JUMP_INST1 && value8 != JUMP_INST2)
 						{
-							error_val = DRIVE_ERROR;
+							error_val = DRIVE_ERROR; // If not jump instruction return error.
 						}
 					}
 				}
 			}
 			if(error_val == NO_ERRORS)
 			{
-				// Read values
+				// Read global values in:
 				BytesPerSec_g = read16(0x0B, array_name);
 				printf("BytesPerSec_g: %u.\n", BytesPerSec_g);
 				SecPerClus_g = read8(0x0D, array_name);
@@ -459,6 +461,8 @@ uint8 mount_drive(uint8 xdata * array_name)
 	return error_val;
 }
 
+//This function will print the sectors of data starting with the first sector of Cluster. 
+//It will initialize array_in.
 uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 {
 	uint8 error_val, SectorOffset, stop, input;
@@ -470,20 +474,20 @@ uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 	nCS0 = 0;
 	while(error_val == NO_ERRORS && !stop) 
 	{
-		error_val = send_command(17, (StartingSector + SectorOffset));
+		error_val = send_command(17, (StartingSector + SectorOffset)); // send command to read in block.
 		if(error_val == NO_ERRORS)
 		{
-			error_val = read_block(BytesPerSec_g, array_in);
+			error_val = read_block(BytesPerSec_g, array_in); // read in data.
 			if(error_val == NO_ERRORS)
 			{
-				print_memory_block(BytesPerSec_g, array_in);
-				printf("Press Esc to stop, anything else to continue...");
+				print_memory_block(BytesPerSec_g, array_in); // Print block.
+				printf("Press Esc to stop, anything else to continue..."); // Prompt user for input.
 				scanf("%c", &input);
-				if(input == ESC)
+				if(input == ESC) 
 				{
 					stop = 1;
 				}
-				else
+				else //If input != ESC, print the next sector.
 				{
 					SectorOffset++;
 					if(SectorOffset == SecPerClus_g)
