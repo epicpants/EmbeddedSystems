@@ -10,7 +10,9 @@
 
 
 
-
+uint32 FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
+uint16 BytesPerSec_g;
+uint8 SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
 
 /***********************************************************************
 DESC: Prints all short file name entries for a given directory 
@@ -29,6 +31,7 @@ uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
    uint8 temp8, j, attr, out_val, error_flag;
    uint8 * values;
 
+   AUXR = 0x0C; // Allows use of 1 KB of RAM
    values=array_in;
    entries=0;
    i=0;
@@ -49,7 +52,6 @@ uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
    AMBERLED=1;
    if(error_flag==NO_ERRORS)
    {
-        
      do
      {
  
@@ -118,7 +120,7 @@ uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
 	}
 	else
 	{
-	   entries=0;    // no entries found indicates disk read error
+		entries=0;    // no entries found indicates disk read error
 	}
     return entries;
  }
@@ -141,6 +143,7 @@ uint32 Read_Dir_Entry(uint32 Sector_num, uint16 Entry, uint8 xdata * array_in)
    uint8 temp8, attr, error_flag;
    uint8 * values;
 
+   AUXR = 0x0C; // Allows use of 1 KB of RAM
    values=array_in;
    entries=0;
    i=0;
@@ -291,7 +294,7 @@ uint32 Find_Next_Clus(uint32 Cluster_num, uint8 xdata * array_name)
 
 uint8 read8(uint16 offset, uint8 xdata * array_name)
 {
-	uint8 return_val = *(array_name + offset);
+	uint8 return_val = array_name[offset];
 	return return_val;
 }
 
@@ -302,22 +305,24 @@ uint16 read16(uint16 offset, uint8 xdata * array_name)
 	for(index = 0; index < 2; index++)
 	{
 		return_val = return_val << 8;
-		temp = *(array_name + offset + (1-index));
-		return_val = return_val | temp;
+		temp = array_name[offset + (1-index)];
+		return_val = (return_val | ((uint16) temp));
 	}
 	return return_val;
 }
 
 uint32 read32(uint16 offset, uint8 xdata * array_name)
 {
-	uint32 return_val = 0;
+	uint32 idata return_val = 0;
 	uint8 temp, index;
 	for(index = 0; index < 4; index++)
 	{
 		return_val = return_val << 8;
-		temp = *(array_name + offset + (3-index));
-		return_val = return_val | temp;
+		temp = array_name[offset + (3-index)];
+		//printf("%2.2BX ", temp);
+		return_val = (return_val | ((uint32) temp));
 	}
+	//printf("\n");
 	return return_val;
 }
 
@@ -327,24 +332,26 @@ uint8 mount_drive(uint8 xdata * array_name)
 	uint8 error_val, value8, NumFATs;
 	uint16 offset, RsvdSecCnt, RootEntCnt, TotSec16, FATSz16;
 
+	AUXR = 0x0C; // Allows use of 1 KB of RAM
 	block_num = 0;
 	RelSec = 0;
 	nCS0 = 0;
-	error_val = send_command(17, block_num);
+	error_val = send_command(CMD17, block_num);
 	if(error_val == NO_ERRORS)
 	{
+		
 		error_val = read_block(512, array_name);
 		if(error_val == NO_ERRORS)
 		{
-			print_memory_block(512, array_name);
 			offset = 0;
 			value8 = read8(offset, array_name);
 			if(value8 != JUMP_INST1 && value8 != JUMP_INST2)
 			{
-				offset = RELSEC_OFFSET;
+				offset = 0x01c6;
+				printf("OFFSET = %u\n", offset);
 				block_num = read32(offset, array_name);
 				RelSec = block_num;
-				printf("block_num: %u\n", block_num);
+				printf("block_num: %lu\n", block_num);
 				error_val = send_command(17, block_num);
 				if(error_val == NO_ERRORS)
 				{
@@ -364,29 +371,29 @@ uint8 mount_drive(uint8 xdata * array_name)
 			{
 				// Read values
 				BytesPerSec_g = read16(0x0B, array_name);
-				printf("BytesPerSec_g: %2.2BX.\n", BytesPerSec_g);
+				printf("BytesPerSec_g: %u.\n", BytesPerSec_g);
 				SecPerClus_g = read8(0x0D, array_name);
-				printf("SecPerClus_g: %2.2BX.\n", SecPerClus_g);
+				printf("SecPerClus_g: %hu.\n", SecPerClus_g);
 				RsvdSecCnt = read16(0x0E, array_name);
-				printf("RsvdSecCnt: %2.2BX.\n", RsvdSecCnt);
+				printf("RsvdSecCnt: %u.\n", RsvdSecCnt);
 				NumFATs = read8(0x10, array_name);
-				printf("NumFATs: %2.2BX.\n", NumFATs);
+				printf("NumFATs: %hu.\n", NumFATs);
 				RootEntCnt = read16(0x11, array_name);
-				printf("RootEntCnt: %2.2BX.\n", RootEntCnt);
+				printf("RootEntCnt: %u.\n", RootEntCnt);
 				TotSec16 = read16(0x13, array_name);
-				printf("TotSec16: %2.2BX.\n", TotSec16);
+				printf("TotSec16: %u.\n", TotSec16);
 				TotSec32 = read32(0x20, array_name);
-				printf("TotSec32: %2.2BX.\n", TotSec32);
+				printf("TotSec32: %lu.\n", TotSec32);
 				FATSz16 = read16(0x16, array_name);
-				printf("FATSz16: %2.2BX.\n", FATSz16);
+				printf("FATSz16: %u.\n", FATSz16);
 				FATSz32 = read32(0x24, array_name);
-				printf("FATSz32: %2.2BX.\n", FATSz32);
+				printf("FATSz32: %lu.\n", FATSz32);
 				RootClus = read32(0x2C, array_name);
-				printf("RootClus: %2.2BX.\n", RootClus);
+				printf("RootClus: %lu.\n", RootClus);
 
 				// Calculate RootDirSectors
 				RootDirSecs_g = ((RootEntCnt * 32) + (BytesPerSec_g - 1)) / BytesPerSec_g;
-				printf("RootDirSecs_g: %2.2BX.\n", RootDirSecs_g);
+				printf("RootDirSecs_g: %lu.\n", RootDirSecs_g);
 
 				// Determine FATSz and TotSec
 				FATSz = FATSz16;
@@ -402,11 +409,11 @@ uint8 mount_drive(uint8 xdata * array_name)
 
 				// Calculate DataSec
 				DataSec = TotSec - (RsvdSecCnt + (NumFATs * FATSz) + RootDirSecs_g);
-				printf("DataSec: %2.2BX.\n", DataSec);
+				printf("DataSec: %lu.\n", DataSec);
 
 				// Calculate CountofClus
 				CountofClus = DataSec / SecPerClus_g;
-				printf("CountofClus: %2.2BX.\n", CountofClus);
+				printf("CountofClus: %lu.\n", CountofClus);
 
 				// Determine FAT type
 				if(CountofClus < 65525)
@@ -417,14 +424,16 @@ uint8 mount_drive(uint8 xdata * array_name)
 				else
 				{
 					FATtype_g = FAT32;
+					SDtype_g = 0;
+					printf("Set SDtype\n");
 				}
 
 				StartofFAT_g = RsvdSecCnt + RelSec;
-				printf("StartofFAT_g: %2.2BX.\n", StartofFAT_g);
+				printf("StartofFAT_g: %lu.\n", StartofFAT_g);
 				FirstDataSec_g = RsvdSecCnt + (NumFATs * FATSz) + RootDirSecs_g + RelSec;
-				printf("FirstDataSec_g: %2.2BX.\n", FirstDataSec_g);
-				FirstRootDirSec_g = RsvdSecCnt + (NumFATs * FATSz) + RelSec;
-				printf("FirstRootDirSec_g: %2.2BX.\n", FirstRootDirSec_g);
+				printf("FirstDataSec_g: %lu.\n", FirstDataSec_g);
+				FirstRootDirSec_g = ((RootClus - 2) * SecPerClus_g) + FirstDataSec_g;
+				printf("FirstRootDirSec_g: %lu.\n", FirstRootDirSec_g);
 			}
 			printf("Mount drive error is: %2.2BX\n", error_val);
 		}
@@ -459,8 +468,7 @@ uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 	SectorOffset = 0;
 	stop = 0;
 	nCS0 = 0;
-	while(error_val == NO_ERRORS && !stop)  // Can't stop, won't stop
-	// Too legit to quit
+	while(error_val == NO_ERRORS && !stop) 
 	{
 		error_val = send_command(17, (StartingSector + SectorOffset));
 		if(error_val == NO_ERRORS)
@@ -488,12 +496,12 @@ uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 			}
 			else
 			{
-				// handle stuff
+				printf("Read block error\n");
 			}
 		}
 		else
 		{
-			// handle stuff
+			printf("Send command error\n");
 		}
 	}
 	

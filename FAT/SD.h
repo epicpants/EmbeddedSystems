@@ -17,7 +17,7 @@
 #define VOLTAGE_NOT_SUPPORTED (73)
 #define BAD_VALUE (74)
 #define CMD0 (0)
-#define CMD17 (17)
+#define CMD17 (0x11)
 #define CMD0_ARGUMENT (0x00000000)
 #define CMD8 (0x08)
 #define CMD8_ARGUMENT (0x000001AA) //CRC7 for this is: 0x87 (1 appended for stop bit on end)
@@ -34,6 +34,6 @@
 #define CARD_NOT_SUPPORTED (71)
 
 uint8 SD_Card_init();
-uint8 read_block(uint16 number_of_bytes, uint8* array);
+uint8 read_block(uint16 number_of_bytes, uint8 xdata * array);
 
 #endif

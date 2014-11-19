@@ -54,6 +54,10 @@ typedef unsigned long uint32;
 #define INTERRUPT_Timer_1_Overflow 3
 #define INTERRUPT_Timer_2_Overflow 5
 
+extern uint32 FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
+extern uint16 BytesPerSec_g;
+extern uint8 SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+
 #endif
 
 /*------------------------------------------------------------------*-

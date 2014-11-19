@@ -16,12 +16,17 @@
 
 void main(void)
 {
-	uint32 block_num, current_directory, ent_clus;
-	uint8 error_val;
 	uint8 xdata block_data[512];
-	uint16 num_entries, entry_number;
+	uint32 current_directory, ent_clus;
+	uint8 error_val;
+	uint16 num_entries, entry_number, i;
 
-	REDLED = 0;	// Sanity check
+	REDLED = 0;	// Insanity check
+	AUXR = 0x0C; // Allows use of 1 KB of RAM
+	for(i = 0; i < 512; i++)
+    {
+		block_data[i] = 0;
+	}
 	UART_INIT();
 	printf("Initializing SPI Master to 400 KHz...\n");
 	YELLOWLED = 0;
@@ -31,13 +36,14 @@ void main(void)
 	SD_Card_init();
 	printf("Initializing SPI Master to 5 MHz\n");
 	GREENLED = 0;
-	SPI_Master_Init(5000000UL);
+	error_val = SPI_Master_Init(1000000UL);
+	printf("SPI Init error_val: %2.2BX\n", error_val);
 	YELLOWLED = 0;
 	printf("Mounting drive...\n");
 	mount_drive(block_data);
 	AMBERLED = 0;
 	current_directory = FirstRootDirSec_g;
-	AUXR = 0x0C; // Allows use of 1 KB of RAM
+	
 	GREENLED = 0;
 	while(1)
 	{
@@ -58,36 +64,5 @@ void main(void)
 				Open_File(ent_clus, block_data);
 			}
 		}
-		/*
-		//block_num = long_serial_input(); // Blocks until user enters a number (BS and DEL supported)
-		nCS0 = 0;
-		error_val = send_command(17, block_num);
-		if(error_val == NO_ERRORS)
-		{
-			error_val = read_block(512, block_data); // Populate block_data
-			if(error_val == NO_ERRORS)
-			{
-				print_memory_block(512, block_data); // Print block
-			}
-			else
-			{
-				printf("Error in read block\n");
-			}
-			
-		}
-		else if(error_val == TIMEOUT_ERROR)
-		{
-			printf("Timeout error occurred\n");
-		}
-		else if(error_val == SPI_ERROR)
-		{
-			printf("SPI error occurred\n");
-		}
-		else // This should not happen
-		{
-			printf("SPI error occurred: %2.2bx\n", error_val);
-		}
-		nCS0 = 1;
-		*/
 	}
 }

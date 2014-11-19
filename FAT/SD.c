@@ -6,6 +6,7 @@
 #include "SD.h"
 #include "SPI.h"
 #include "PORT.H"
+#include <stdio.h>
 
 /***********************************************************************
 DESC:  Initializes SD Card
@@ -253,7 +254,7 @@ RETURNS: one byte error status (NO_ERRORS, TIMEOUT_ERROR, BAD_VALUE)
 		populates array with number_of_bytes bytes of SD Card memory
 CAUTION: 
 ************************************************************************/
-uint8 read_block(uint16 number_of_bytes, uint8* array)
+uint8 read_block(uint16 number_of_bytes, uint8 xdata * array)
 {
 	uint16 index;
 	uint16 timeout;
@@ -266,12 +267,12 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 	errorStatus = 0;
 	errorFlag = 0;
 	
-	printf("Beginning read_block...\n");
+	//printf("Beginning read_block...\n");
 	for(index = 0; index < 5; index++)
 	{
 		array_out[index] = 0;
 	}
-	printf("Waiting for R1 response...\n");
+	//printf("Waiting for R1 response...\n");
 	errorFlag = receive_response(SIZE_OF_R1, array_out); //Receive R1 response:
 
 	if(errorFlag != NO_ERRORS)
@@ -285,7 +286,7 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 
 	if(errorStatus == NO_ERRORS)
 	{
-		printf("Got a good R1 response, now waiting for data start token...\n");
+		//printf("Got a good R1 response, now waiting for data start token...\n");
 		timeout = 0;
 		do
 		{
@@ -313,7 +314,7 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 		}
 		else // If we land here we got the data start token and can proceed with reading the data:
 		{
-			printf("Got the data start token, now reading in data.\n");
+			//printf("Got the data start token, now reading in data.\n");
 			for(index = 0; (index < number_of_bytes) && (errorStatus == NO_ERRORS); index++) //Reading in data:
 			{
 				SPI_Return = SPI_Transfer(0xFF);
@@ -330,7 +331,7 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 				}
 			}
 
-			printf("Received data, now sending three more bytes...\n");
+			//printf("Received data, now sending three more bytes...\n");
 			for(index = 0; index < 3; index++) //Discarding checksum (first two bytes)
 			{
 				SPI_Return = SPI_Transfer(0xFF);
@@ -338,6 +339,6 @@ uint8 read_block(uint16 number_of_bytes, uint8* array)
 			  	
 		}
 	}
-	printf("Exiting read_block, error status is %2.2bx.\n",errorStatus); 
+	//printf("Exiting read_block, error status is %2.2bx.\n",errorStatus); 
 	return errorStatus;
 }

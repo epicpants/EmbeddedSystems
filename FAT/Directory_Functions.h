@@ -15,14 +15,14 @@
 #define directory_bit  (0x10000000)  // lsb of first nibble (bit28)
 #define JUMP_INST1 (0xEB)
 #define JUMP_INST2 (0xE9)
-#define RELSEC_OFFSET (0x01C6)
 #define DRIVE_ERROR (75)
 #define FAT16_ERROR (76)
 
 
-static uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
-static uint16 idata BytesPerSec_g;
-static uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+extern uint32 FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
+extern uint16 BytesPerSec_g;
+extern uint8 SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+
 
 
 // ------ Public function prototypes -------------------------------
