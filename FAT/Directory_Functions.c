@@ -9,9 +9,7 @@
 #include "print.h"
 
 
-uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
-uint16 idata BytesPerSec_g;
-uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+
 
 
 /***********************************************************************
@@ -291,13 +289,13 @@ uint32 Find_Next_Clus(uint32 Cluster_num, uint8 xdata * array_name)
 	return returnVal;
 }
 
-uint8 read8(uint16 offset, uint8 * array_name)
+uint8 read8(uint16 offset, uint8 xdata * array_name)
 {
 	uint8 return_val = *(array_name + offset);
 	return return_val;
 }
 
-uint16 read16(uint16 offset, uint8 * array_name)
+uint16 read16(uint16 offset, uint8 xdata * array_name)
 {
 	uint16 return_val = 0;
 	uint8 temp, index;
@@ -310,7 +308,7 @@ uint16 read16(uint16 offset, uint8 * array_name)
 	return return_val;
 }
 
-uint32 read32(uint16 offset, uint8 * array_name)
+uint32 read32(uint16 offset, uint8 xdata * array_name)
 {
 	uint32 return_val = 0;
 	uint8 temp, index;
@@ -323,7 +321,7 @@ uint32 read32(uint16 offset, uint8 * array_name)
 	return return_val;
 }
 
-uint8 mount_drive(uint8 * array_name)
+uint8 mount_drive(uint8 xdata * array_name)
 {
 	uint32 block_num, TotSec32, RootClus, FATSz32, FATSz, DataSec, CountofClus, TotSec, RelSec;
 	uint8 error_val, value8, NumFATs;
@@ -338,6 +336,7 @@ uint8 mount_drive(uint8 * array_name)
 		error_val = read_block(512, array_name);
 		if(error_val == NO_ERRORS)
 		{
+			print_memory_block(512, array_name);
 			offset = 0;
 			value8 = read8(offset, array_name);
 			if(value8 != JUMP_INST1 && value8 != JUMP_INST2)
@@ -345,7 +344,8 @@ uint8 mount_drive(uint8 * array_name)
 				offset = RELSEC_OFFSET;
 				block_num = read32(offset, array_name);
 				RelSec = block_num;
-				error_val = send_command(17, block_num * 512);
+				printf("block_num: %u\n", block_num);
+				error_val = send_command(17, block_num);
 				if(error_val == NO_ERRORS)
 				{
 					error_val = read_block(512, array_name);
@@ -364,18 +364,29 @@ uint8 mount_drive(uint8 * array_name)
 			{
 				// Read values
 				BytesPerSec_g = read16(0x0B, array_name);
+				printf("BytesPerSec_g: %2.2BX.\n", BytesPerSec_g);
 				SecPerClus_g = read8(0x0D, array_name);
+				printf("SecPerClus_g: %2.2BX.\n", SecPerClus_g);
 				RsvdSecCnt = read16(0x0E, array_name);
+				printf("RsvdSecCnt: %2.2BX.\n", RsvdSecCnt);
 				NumFATs = read8(0x10, array_name);
+				printf("NumFATs: %2.2BX.\n", NumFATs);
 				RootEntCnt = read16(0x11, array_name);
+				printf("RootEntCnt: %2.2BX.\n", RootEntCnt);
 				TotSec16 = read16(0x13, array_name);
+				printf("TotSec16: %2.2BX.\n", TotSec16);
 				TotSec32 = read32(0x20, array_name);
+				printf("TotSec32: %2.2BX.\n", TotSec32);
 				FATSz16 = read16(0x16, array_name);
+				printf("FATSz16: %2.2BX.\n", FATSz16);
 				FATSz32 = read32(0x24, array_name);
+				printf("FATSz32: %2.2BX.\n", FATSz32);
 				RootClus = read32(0x2C, array_name);
+				printf("RootClus: %2.2BX.\n", RootClus);
 
 				// Calculate RootDirSectors
 				RootDirSecs_g = ((RootEntCnt * 32) + (BytesPerSec_g - 1)) / BytesPerSec_g;
+				printf("RootDirSecs_g: %2.2BX.\n", RootDirSecs_g);
 
 				// Determine FATSz and TotSec
 				FATSz = FATSz16;
@@ -391,9 +402,11 @@ uint8 mount_drive(uint8 * array_name)
 
 				// Calculate DataSec
 				DataSec = TotSec - (RsvdSecCnt + (NumFATs * FATSz) + RootDirSecs_g);
+				printf("DataSec: %2.2BX.\n", DataSec);
 
 				// Calculate CountofClus
 				CountofClus = DataSec / SecPerClus_g;
+				printf("CountofClus: %2.2BX.\n", CountofClus);
 
 				// Determine FAT type
 				if(CountofClus < 65525)
@@ -407,9 +420,13 @@ uint8 mount_drive(uint8 * array_name)
 				}
 
 				StartofFAT_g = RsvdSecCnt + RelSec;
+				printf("StartofFAT_g: %2.2BX.\n", StartofFAT_g);
 				FirstDataSec_g = RsvdSecCnt + (NumFATs * FATSz) + RootDirSecs_g + RelSec;
+				printf("FirstDataSec_g: %2.2BX.\n", FirstDataSec_g);
 				FirstRootDirSec_g = RsvdSecCnt + (NumFATs * FATSz) + RelSec;
+				printf("FirstRootDirSec_g: %2.2BX.\n", FirstRootDirSec_g);
 			}
+			printf("Mount drive error is: %2.2BX\n", error_val);
 		}
 		else
 		{
@@ -429,6 +446,57 @@ uint8 mount_drive(uint8 * array_name)
 	{
 		printf("SPI error occurred: %2.2bx\n", error_val);
 	}
+	nCS0 = 1;
+	return error_val;
+}
+
+uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
+{
+	uint8 error_val, SectorOffset, stop, input;
+	uint32 StartingSector, cluster_num;
+	
+	StartingSector = First_Sector(Cluster);
+	SectorOffset = 0;
+	stop = 0;
+	nCS0 = 0;
+	while(error_val == NO_ERRORS && !stop)  // Can't stop, won't stop
+	// Too legit to quit
+	{
+		error_val = send_command(17, (StartingSector + SectorOffset));
+		if(error_val == NO_ERRORS)
+		{
+			error_val = read_block(BytesPerSec_g, array_in);
+			if(error_val == NO_ERRORS)
+			{
+				print_memory_block(BytesPerSec_g, array_in);
+				printf("Press Esc to stop, anything else to continue...");
+				scanf("%c", &input);
+				if(input == ESC)
+				{
+					stop = 1;
+				}
+				else
+				{
+					SectorOffset++;
+					if(SectorOffset == SecPerClus_g)
+					{
+						SectorOffset = 0;
+						stop = 1;
+						cluster_num = Find_Next_Clus(cluster_num, array_in);
+					}
+				}
+			}
+			else
+			{
+				// handle stuff
+			}
+		}
+		else
+		{
+			// handle stuff
+		}
+	}
+	
 	nCS0 = 1;
 	return error_val;
 }
