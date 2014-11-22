@@ -63,10 +63,10 @@ void I2C_Clock_Delay(uint8 control)
 uint8 I2C_Check_ACK(void)
 {
 	uint8 error_val = NO_ERRORS;
-	I2C_clock_delay(CONTINUE);
+	I2C_Clock_Delay(CONTINUE);
 	SCL = 0;
 	SDA = 1;
-	I2C_clock_delay(CONTINUE);
+	I2C_Clock_Delay(CONTINUE);
 	SCL = 1;
 	while(SCL != 1);
 	if(SDA == NACK)
@@ -94,6 +94,10 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 		error_val = BUS_BUSY;
 		return error_val;
 	}
+	else
+	{
+		I2C_Delay_Start();
+	}
 
 	/*****************
 	 Start condition
@@ -108,11 +112,11 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	write_byte = (device_addr << 1); // R/W set to 0
 	for(index = 0; index < 8; index++)
 	{
-		I2C_clock_delay(CONTINUE);
+		I2C_Clock_Delay(CONTINUE);
 		SCL = 0;
 		write_bit = ((write_byte >> (7 - index)) & 0x01);
 		SDA = write_bit;
-		I2C_clock_delay(CONTINUE);
+		I2C_Clock_Delay(CONTINUE);
 		SCL = 1;
 		while(SCL != 1);
 		if(SDA != write_bit)
@@ -132,11 +136,11 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 		write_byte = array_name[index];
 		for(index = 0; index < 8; index++)
 		{
-			I2C_clock_delay(CONTINUE);
+			I2C_Clock_Delay(CONTINUE);
 			SCL = 0;
 			write_bit = ((write_byte >> (7 - index)) & 0x01);
 			SDA = write_bit;
-			I2C_clock_delay(CONTINUE);
+			I2C_Clock_Delay(CONTINUE);
 			SCL = 1;
 			while(SCL != 1);
 			if(SDA != write_bit)
@@ -152,10 +156,10 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	 Stop condition
 	 ****************/
 
-	I2C_clock_delay(CONTINUE);
+	I2C_Clock_Delay(CONTINUE);
 	SCL = 0;
 	SDA = 0;
-	I2C_clock_delay(CONTINUE);
+	I2C_Clock_Delay(STOP);
 	SCL = 1;
 	while(SCL != 1);
 	SDA = 1;
