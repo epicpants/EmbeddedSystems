@@ -39,7 +39,7 @@
 //  4 - Dallas 320, 520 etc.
 //  1 - Dallas 420, etc.
 #define OSC_PER_INST (12)
-
+#define NO_ERRORS (0)
 //------------------------------------------------------------------
 // SHOULD NOT NEED TO EDIT THE SECTIONS BELOW
 //------------------------------------------------------------------
