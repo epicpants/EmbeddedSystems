@@ -7,7 +7,7 @@ uint8 idata I2C_reloadL;
 
 void I2C_Set_Frequency(uint32 freq);
 void I2C_Delay_Start(void);
-void I2C_clock_delay(uint8 control);
+void I2C_Clock_Delay(uint8 control);
 
 //This function will initialize the I2C_freq that is required for the I2C delay function.
 void I2C_Set_Frequency(uint32 freq)
@@ -37,7 +37,7 @@ void I2C_Delay_Start(void)
 }
 
 //This function will either stop the timer or reload it to continue based on the control value that is sent to it.
-void I2C_clock_delay(uint8 control)
+void I2C_Clock_Delay(uint8 control)
 {
 	if(TR1 == 1) // If the timer is running:
 	{
@@ -70,14 +70,124 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 //If there is an error, the return value will be non-zero.
 uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 {
-	uint8 index, error;
+	uint8 index, error, check_value, count, byte_value;
 
 	error = 0;
 
 	SCL = 1;
 	SDA = 1;
 	
-	
+	if(SCL != 1 || SDA != 1)
+	{
+		error = BUS_BUSY;
+	}
+	else
+	{
+		I2C_Delay_Start();
+	}
 
+
+	if(error == NO_ERRORS) // Start condition:
+	{
+		I2C_Clock_Delay(CONTINUE);
+		if(SCL != 1 || SDA != 1)
+		{
+			error = BUS_BUSY;
+		}
+		else
+			SDA = 0;           //We do not need to check to ensure it is low because pulling low will always succeed with I2C.
+	}
+
+	if(error == NO_ERRORS) // Send address, msb first then read bit:
+	{
+		device_addr = ((device_addr << 1) | 0X01);
+		for(index = 0; index < 8 && error == NO_ERRORS; index++)
+		{
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 0;
+			check_value = ((device_addr >> (8 - index)) & 0x01);
+			if(check_value == 0x01)
+				SDA = 1;
+			else
+				SDA = 0;
+
+			I2C_Clock_Delay(CONTINUE);
+
+			SCL = 1;
+			while(SCL != 1); // Slow devices may need more time than we allow, so they will hold SCL low until they are finished.
+
+			if(((SDA == 0) && (check_value == 0x01)) || ((SDA == 1) && (check_value == 0x00)))
+			{
+				error = BUS_BUSY;
+				I2C_Clock_Delay(STOP);
+			}
+		}	
+	}
+
+	if(error == NO_ERRORS) //Allow slave device to send ACK:
+	{
+		I2C_Clock_Delay(CONTINUE);
+		SCL = 0;
+		SDA = 1;
+		I2C_Clock_Delay(CONTINUE);
+		SCL = 1;
+		while(SCL != 1);
+		if(SDA != 0)
+		{
+			I2C_Clock_Delay(STOP);
+			error = SLAVE_NACK;
+		}
+	}
+
+	for(count = 0; (count < number_of_bytes) && (error == NO_ERRORS); index++) // Read in the response from the slave device:
+	{
+		byte_value = 0;
+		SDA = 1;
+		for(index = 0; index < 8; index++)
+		{
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 0;
+			SDA = 1;
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 1;
+			while(SCL != 1);
+			byte_value |= ((uint8)SDA << (8 - index));
+		}
+
+		array_name[count] = byte_value;
+
+		if(count < number_of_bytes - 1) // If we have to receive another byte, send ACK.
+		{
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 0;
+			SDA = 0;
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 1;
+			SDA = 1;
+			while(SCL != 1);
+		}
+		else // If we just received the last byte, send NACK:
+		{
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 0;
+			SDA = 1;
+			I2C_Clock_Delay(CONTINUE);
+			SCL = 1;
+			while(SCL != 1);
+		}
+	} // End of read loop.
+
+	if(error == NO_ERRORS) // Send stop condition:
+	{
+		I2C_Clock_Delay(CONTINUE);
+		SCL = 0;
+		SDA = 0;
+		I2C_Clock_Delay(STOP);
+		SCL = 1;
+		while(SCL != 1);
+		SDA = 1;
+	}
+	
+	TR1 = 0; // Stop the timer we used for the I2C delays.
 	return error;
 }
