@@ -3,7 +3,7 @@
 #ifndef _I2C_H
 #define _I2C_H
 
-#include <AT89C51RC2.h>
+#include "AT89C51RC2.h"
 #include "main.h"
 #include "PORT.H"
 
@@ -13,9 +13,14 @@
 
 #define BUS_BUSY (57)
 #define SLAVE_NACK (58)
+#define ACK (0)
+#define NACK (1)
+#define NO_ERRORS (0)
+
 
 uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name);
 uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name);
+uint8 I2C_Check_ACK(void);
 
 
 
