@@ -1,5 +1,8 @@
-
-
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: I2C.c
+ * Brief: Prototypes for I2C functions for device communication
+ */
 #ifndef _I2C_H
 #define _I2C_H
 
@@ -16,11 +19,14 @@
 #define ACK (0)
 #define NACK (1)
 #define NO_ERRORS (0)
+#define I2C_FREQ (90000UL)
 
 
 uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name);
 uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name);
 uint8 I2C_Check_ACK(void);
+
+void I2C_Set_Frequency(uint32 freq);
 
 
 

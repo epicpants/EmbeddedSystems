@@ -1,11 +1,15 @@
+/*
+ * Authors: Jon Eftink and Tyler Ryan
+ * File: I2C.c
+ * Brief: Implemented I2C functions for device communication
+ */
 #include "I2C.h"
-
+#include <stdio.h>
 
 uint32 idata I2C_freq;
 uint8 idata I2C_reloadH;
 uint8 idata I2C_reloadL;
 
-void I2C_Set_Frequency(uint32 freq);
 void I2C_Delay_Start(void);
 void I2C_Clock_Delay(uint8 control);
 
@@ -54,12 +58,13 @@ void I2C_Clock_Delay(uint8 control)
 	}
 	else if(control == STOP)
 	{
-		TR1 = 0; // clear overflow flag.
+		TF1 = 0; // clear overflow flag.
 	}
 	
 	return;
 }
 
+// Helper function to return Slave response as error (NO_ERRORS for ACK, SLAVE_NACK for NACK)
 uint8 I2C_Check_ACK(void)
 {
 	uint8 error_val = NO_ERRORS;
@@ -76,6 +81,9 @@ uint8 I2C_Check_ACK(void)
 	return error_val;
 }
 
+// This function will write number_of_bytes to the device at device_addr
+// array_name contains the bytes to be written to the device
+// Returns byte corresponding to error (NO_ERRORS, BUS_BUSY, SLAVE_NACK)
 uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 {
 	uint8 error_val, index, write_byte;
@@ -110,6 +118,7 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	 ****************/
 	
 	write_byte = (device_addr << 1); // R/W set to 0
+	//printf("I2C write_byte = %2.2bX\n", write_byte);
 	for(index = 0; index < 8; index++)
 	{
 		I2C_Clock_Delay(CONTINUE);
@@ -182,6 +191,7 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	if(SCL != 1 || SDA != 1)
 	{
 		error = BUS_BUSY;
+		return error;
 	}
 	else
 	{
@@ -195,6 +205,7 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 		if(SCL != 1 || SDA != 1)
 		{
 			error = BUS_BUSY;
+			return error;
 		}
 		else
 			SDA = 0;           //We do not need to check to ensure it is low because pulling low will always succeed with I2C.
@@ -202,12 +213,13 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 
 	if(error == NO_ERRORS) // Send address, msb first then read bit:
 	{
-		device_addr = ((device_addr << 1) | 0X01);
+		device_addr = ((device_addr << 1) | 0x01);
+		//printf("device_addr = %2.2bX\n", device_addr);
 		for(index = 0; index < 8 && error == NO_ERRORS; index++)
 		{
 			I2C_Clock_Delay(CONTINUE);
 			SCL = 0;
-			check_value = ((device_addr >> (8 - index)) & 0x01);
+			check_value = ((device_addr >> (7 - index)) & 0x01);
 			if(check_value == 0x01)
 				SDA = 1;
 			else
@@ -222,6 +234,7 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 			{
 				error = BUS_BUSY;
 				I2C_Clock_Delay(STOP);
+				return error;
 			}
 		}	
 	}
@@ -238,11 +251,14 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 		{
 			I2C_Clock_Delay(STOP);
 			error = SLAVE_NACK;
+			printf("Got SLAVE_NACK here\n");
 		}
 	}
 
-	for(count = 0; (count < number_of_bytes) && (error == NO_ERRORS); index++) // Read in the response from the slave device:
+	for(count = 0; (count < number_of_bytes) && (error == NO_ERRORS); count++) // Read in the response from the slave device:
 	{
+		printf("Inside the read for loop\n");
+		printf("Number of bytes = %2.2bX\n", number_of_bytes);
 		byte_value = 0;
 		SDA = 1;
 		for(index = 0; index < 8; index++)
@@ -253,7 +269,7 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 			I2C_Clock_Delay(CONTINUE);
 			SCL = 1;
 			while(SCL != 1);
-			byte_value |= ((uint8)SDA << (8 - index));
+			byte_value |= ((uint8)SDA << (7 - index));
 		}
 
 		array_name[count] = byte_value;
@@ -279,16 +295,14 @@ uint8 I2C_Read(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 		}
 	} // End of read loop.
 
-	if(error == NO_ERRORS) // Send stop condition:
-	{
-		I2C_Clock_Delay(CONTINUE);
-		SCL = 0;
-		SDA = 0;
-		I2C_Clock_Delay(STOP);
-		SCL = 1;
-		while(SCL != 1);
-		SDA = 1;
-	}
+	
+	I2C_Clock_Delay(CONTINUE);
+	SCL = 0;
+	SDA = 0;
+	I2C_Clock_Delay(STOP);
+	SCL = 1;
+	while(SCL != 1);
+	SDA = 1;
 	
 	TR1 = 0; // Stop the timer we used for the I2C delays.
 	return error;
