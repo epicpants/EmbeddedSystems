@@ -52,7 +52,7 @@ void main(void)
 	mount_drive(block_data);
 
 
-	I2C_Set_Frequency(I2C_FREQ);
+	I2C_Set_Frequency(I2C_FREQ);		/**
 
 	/*****************
 	 Load patches
@@ -101,6 +101,7 @@ void main(void)
 	 Test I2C
 	 ****************/
 
+	AMBERLED = 0;
 	timeout = TIMEOUT_VAL;
 	error_val = NO_ERRORS;
 	send[0] = 0x01;

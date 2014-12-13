@@ -6,6 +6,9 @@
 #include "I2C.h"
 #include <stdio.h>
 
+#define ON (0)
+#define OFF (1)
+
 uint32 idata I2C_freq;
 uint8 idata I2C_reloadH;
 uint8 idata I2C_reloadL;
@@ -89,6 +92,7 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	uint8 error_val, index, write_byte;
 	bit write_bit;
 
+	YELLOWLED = ON;
 	error_val = NO_ERRORS;
 
 	/*****************
@@ -100,6 +104,7 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	if(SCL != 1 || SDA != 1)
 	{
 		error_val = BUS_BUSY;
+		YELLOWLED = OFF;
 		return error_val;
 	}
 	else
@@ -131,6 +136,7 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 		if(SDA != write_bit)
 		{
 			error_val = BUS_BUSY;
+			YELLOWLED = OFF;
 			return error_val;
 		}
 	}
@@ -155,6 +161,7 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 			if(SDA != write_bit)
 			{
 				error_val = BUS_BUSY;
+				YELLOWLED = OFF;
 				return error_val;
 			}
 		}
@@ -172,7 +179,8 @@ uint8 I2C_Write(uint8 device_addr, uint8 number_of_bytes, uint8 * array_name)
 	SCL = 1;
 	while(SCL != 1);
 	SDA = 1;
-
+	
+	YELLOWLED = OFF;
 	return error_val;
 }
 

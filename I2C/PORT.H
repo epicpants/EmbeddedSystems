@@ -39,13 +39,13 @@ sbit P0_7 = P0^7;  */
 // Port 1
 sbit SCL = P1^0;
 sbit SDA = P1^1;
-/*sbit P1_2 = P1^2;
-sbit P1_3 = P1^3;
-*/
+sbit RESET = P1^2;
+sbit DATA_REQ = P1^3;
+
 sbit nCS0 = P1^4;
 //sbit MISO = P1^5;
 //sbit SCK = P1^6;
-//sbit MOSI = P1^7;	*/
+//sbit MOSI = P1^7;
 
 // Port 2
 sbit SW1 = P2^0;
