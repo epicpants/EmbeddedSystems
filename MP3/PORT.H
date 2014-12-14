@@ -34,7 +34,7 @@ sbit P0_3 = P0^3;
 sbit P0_4 = P0^4;
 sbit P0_5 = P0^5;
 sbit P0_6 = P0^6;*/
-sbit BIT_EN = P0^7; //Bit enable for STA013  
+sbit BIT_EN = P0^7; 
 
 // Port 1
 sbit SCL = P1^0;
@@ -45,7 +45,7 @@ sbit DATA_REQ = P1^3;
 sbit nCS0 = P1^4;
 //sbit MISO = P1^5;
 //sbit SCK = P1^6;
-//sbit MOSI = P1^7;
+//sbit MOSI = P1^7;	*/
 
 // Port 2
 sbit SW1 = P2^0;

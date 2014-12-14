@@ -3,7 +3,7 @@
  * File: UART.c
  * Brief: function definition of UART initialization
  */
-#include "UART.h"
+#include <UART.h>
 
 /***********************************************************************
 DESC:  Initializes SFRs in the 8051 to set up UART communication

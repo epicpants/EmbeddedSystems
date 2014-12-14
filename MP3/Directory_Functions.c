@@ -483,7 +483,6 @@ uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 				print_memory_block(BytesPerSec_g, array_in); // Print block.
 				printf("Press Esc to stop, anything else to continue..."); // Prompt user for input.
 				scanf("%c", &input);
-				printf("\n\n");
 				if(input == ESC) 
 				{
 					stop = 1;
