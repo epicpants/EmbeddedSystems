@@ -13,6 +13,7 @@
 #include "print.h"
 #include "Directory_Functions.h"
 #include "I2C.h"
+#include "button.h"
 
 #define STA013 (0x43)
 #define TIMEOUT_VAL (50)
