@@ -48,8 +48,6 @@ void main(void)
 	AMBERLED = 0;
 	current_directory = FirstRootDirSec_g;
 
-	//I2C_Set_Frequency();
-
 	error_val = init_decoder();
 	if(error_val != NO_ERRORS)
 	{
