@@ -20,6 +20,7 @@ typedef enum
 typedef enum 
 {
 	PLAYING,
+	END_OF_SONG,
 	STOP
 } player_status;
 
