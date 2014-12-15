@@ -12,48 +12,63 @@
 #include "Serial_In.h"
 #include "print.h"
 #include "Directory_Functions.h"
+#include "button.h"
+#include "I2C.h"
+#include "STA013.h"
+
+
+
+#define TIMEOUT_VAL (50)
+
 
 
 void main(void)
 {
-	uint8 xdata block_data[512];
-	uint32 current_directory, ent_clus;
-	uint8 error_val;
-	uint16 num_entries, entry_number, i;
+	uint8 xdata block_data_1[512];
+	uint8 xdata block_data_2[512];
+	uint32 idata current_directory;
+	uint32 idata ent_clus;
+	uint8 idata error_val;
+	uint16 idata num_entries;
+ 	uint16 idata entry_number;
 
-	REDLED = 0;	// Insanity check
 	AUXR = 0x0C; // Allows use of 1 KB of RAM
-	for(i = 0; i < 512; i++) // Initializing the block_data.
-    {
-		block_data[i] = 0;
-	}
 	UART_INIT();
 	printf("Initializing SPI Master to 400 KHz...\n");
 	YELLOWLED = 0;
 	SPI_Master_Init(400000UL);
-	AMBERLED = 0;
 	printf("Initializing SD Card...\n");
 	SD_Card_init();
-	printf("Initializing SPI Master to 5 MHz\n");
-	GREENLED = 0;
-	error_val = SPI_Master_Init(5000000UL);
+	printf("Initializing SPI Master to 8 MHz\n");
+	error_val = SPI_Master_Init(8000000UL);
 	printf("SPI Init error_val: %2.2BX\n", error_val);
 	YELLOWLED = 0;
 	printf("Mounting drive...\n");
-	mount_drive(block_data);
+	mount_drive(block_data_1);
 	AMBERLED = 0;
 	current_directory = FirstRootDirSec_g;
+
+	//I2C_Set_Frequency();
+
+	error_val = init_decoder();
+	if(error_val != NO_ERRORS)
+	{
+		printf("Initialization of the MP3 decoder failed.\n");
+		REDLED = 0;
+	}
+
+
 	
 	GREENLED = 0;
 	while(1)
 	{
-		num_entries = Print_Directory(current_directory, block_data);
+		num_entries = Print_Directory(current_directory, block_data_1);
 		YELLOWLED = 0;
 		printf("Enter entry number: ");
 		entry_number = (uint16) long_serial_input();
 		if(entry_number <= num_entries)
 		{
-			ent_clus = Read_Dir_Entry(current_directory, entry_number, block_data);
+			ent_clus = Read_Dir_Entry(current_directory, entry_number, block_data_1);
 			if(ent_clus & directory_bit)
 			{
 				ent_clus &= 0x0FFFFFFF;
@@ -61,7 +76,7 @@ void main(void)
 			}
 			else
 			{
-				Open_File(ent_clus, block_data);
+				Open_File(ent_clus, block_data_1);
 			}
 		}
 	}

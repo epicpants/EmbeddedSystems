@@ -9,24 +9,12 @@
 #define ON (0)
 #define OFF (1)
 
-uint32 idata I2C_freq;
-uint8 idata I2C_reloadH;
-uint8 idata I2C_reloadL;
+#define RELOAD (65536 - ((OSC_FREQ) / (OSC_PER_INST * 2 * I2C_FREQ)))
+#define I2C_RELOAD_H (RELOAD >> 8)
+#define I2C_RELOAD_L (RELOAD & 0x00FF)
 
 void I2C_Delay_Start(void);
 void I2C_Clock_Delay(uint8 control);
-
-//This function will initialize the I2C_freq that is required for the I2C delay function.
-void I2C_Set_Frequency(uint32 freq)
-{
-	uint16 reload;
-	I2C_freq = freq;
-
-	reload = 65536 - ((OSC_FREQ) / (OSC_PER_INST * 2 * I2C_freq)); // Calculate the reload value for a 16 bit timer
-	I2C_reloadH = (reload >> 8); // Initialize the timer reload values here.
-	I2C_reloadL = (reload & 0x00FF);
-	return;
-}
 
 //This function uses timer1 to generate a delay for I2C communication.
 //After this function is called the calling function should block until TF1 == 0.
@@ -36,8 +24,8 @@ void I2C_Delay_Start(void)
 	TMOD |= 0X10; 
 
 	ET1 = 0; // No interrupts
-	TH1 = I2C_reloadH;
-	TH2 = I2C_reloadL;
+	TH1 = I2C_RELOAD_H;
+	TH2 = I2C_RELOAD_L;
 	TF1 = 0; // clear overflow flag
 	TR1 = 1; // Start the timer
 	return;
@@ -54,8 +42,8 @@ void I2C_Clock_Delay(uint8 control)
 	TR1 = 0; // Stop the timer
 	if(control == CONTINUE)
 	{
-		TH1 = I2C_reloadH;
-		TH2 = I2C_reloadL;
+		TH1 = I2C_RELOAD_H;
+		TH2 = I2C_RELOAD_L;
  		TF1 = 0; // clear overflow flag.
 		TR1 = 1; // Start timer.
 	}
