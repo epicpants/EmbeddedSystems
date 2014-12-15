@@ -7,7 +7,7 @@
 #define ACTIVE         ( 0  ) //Buttons are active low.
 #define INACTIVE       ( 1  )
 #define DEBOUNCE_TIME  ( 50 ) // debounce time in ms
-#define DEBOUNCE_TICKS ( 5 ) //55ms debounce time if tick interval is correct.
+#define DEBOUNCE_TICKS ( DEBOUNCE_TIME / TICK_INTERVAL + 1 ) //55ms debounce time if tick interval is correct.
 
 typedef uint8 button_state;
 enum

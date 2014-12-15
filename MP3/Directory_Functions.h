@@ -19,9 +19,9 @@
 #define FAT16_ERROR (76)
 
 
-extern uint32 FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
-extern uint16 BytesPerSec_g;
-extern uint8 SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+extern uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
+extern uint16 idata BytesPerSec_g;
+extern uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g, FATshift_g;
 
 
 

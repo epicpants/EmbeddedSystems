@@ -10,9 +10,9 @@
 
 
 
-uint32 FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
-uint16 BytesPerSec_g;
-uint8 SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g,FATshift_g;
+uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
+uint16 idata BytesPerSec_g;
+uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g, FATshift_g;
 
 /***********************************************************************
 DESC: Prints all short file name entries for a given directory 

@@ -42,13 +42,11 @@ void main(void)
 	printf("Initializing SPI Master to 8 MHz\n");
 	error_val = SPI_Master_Init(8000000UL);
 	printf("SPI Init error_val: %2.2BX\n", error_val);
-	YELLOWLED = 0;
+
 	printf("Mounting drive...\n");
 	mount_drive(block_data_1);
-	AMBERLED = 0;
-	current_directory = FirstRootDirSec_g;
 
-	//I2C_Set_Frequency();
+	current_directory = FirstRootDirSec_g;
 
 	error_val = init_decoder();
 	if(error_val != NO_ERRORS)
