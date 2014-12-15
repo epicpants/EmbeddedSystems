@@ -5,8 +5,7 @@
 #include "delay.h"
 
 
-typedef uint8 player_state;
-enum
+typedef enum  
 {
 	FIND_CLUSTER_1,
 	FIND_CLUSTER_2,
@@ -16,19 +15,19 @@ enum
 	DATA_SEND_2,
 	DATA_IDLE_1,
 	DATA_IDLE_2
-}
+} player_state;
 
-typedef uint8 player_status;
-enum
+typedef enum 
 {
 	PLAYING,
-	STOP,
-	
-}
+	STOP
+} player_status;
 
 
 
-
+void Play_MP3_File(uint32 first_cluster_of_song);
+void Timer_2_Interrupt_Init(uint8 tick_ms);
+//void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow;
 
 
 #endif
