@@ -33,8 +33,8 @@ sbit P0_2 = P0^2;
 sbit P0_3 = P0^3;
 sbit P0_4 = P0^4;
 sbit P0_5 = P0^5;
-sbit P0_6 = P0^6;*/
-sbit BIT_EN = P0^7; 
+sbit P0_6 = P0^6;
+sbit P0_7 = P0^7;*/ 
 
 // Port 1
 sbit SCL = P1^0;
@@ -60,8 +60,8 @@ sbit REDLED = P2^7;
 // Port 3
 sbit TxD_pin = P3^1;
 sbit RxD_pin = P3^0;
-/*sbit P3_2 = P3^2;
-sbit P3_3 = P3^3;
+sbit BIT_EN = P3^2;
+/*sbit P3_3 = P3^3;
 sbit P3_4 = P3^4;
 sbit P3_5 = P3^5; */
 sbit RS = P3^6;
