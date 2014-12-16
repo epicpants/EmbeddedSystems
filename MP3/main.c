@@ -20,12 +20,11 @@
 
 #define TIMEOUT_VAL (50)
 
-
+uint8 xdata block_data_1[512];
+uint8 xdata block_data_2[512];
 
 void main(void)
 {
-	uint8 xdata block_data_1[512];
-	uint8 xdata block_data_2[512];
 	uint32 idata current_directory;
 	uint32 idata ent_clus;
 	uint8 idata error_val;
