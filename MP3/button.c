@@ -70,3 +70,10 @@ void update_button(button * myButton, uint8 pin_status)
 	 }
 	 return;
 }
+
+//This function initializes the button states to SW_NOT_PRESSED.
+void init_button(button * btn)
+{
+	btn->state = SW_NOT_PRESSED;
+	btn->num_ticks = 0;
+}

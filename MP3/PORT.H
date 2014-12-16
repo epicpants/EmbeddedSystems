@@ -60,7 +60,7 @@ sbit REDLED = P2^7;
 // Port 3
 sbit TxD_pin = P3^1;
 sbit RxD_pin = P3^0;
-sbit BIT_EN = P3^2;
+sbit BIT_EN = P3^2; // This pin is active high.
 /*sbit P3_3 = P3^3;
 sbit P3_4 = P3^4;
 sbit P3_5 = P3^5; */

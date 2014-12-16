@@ -31,13 +31,14 @@ typedef enum
 
 void Play_MP3_File(uint32 first_cluster_of_song);
 void Timer_2_Interrupt_Init(uint8 tick_ms);
-void SPI_Transfer_End(void);
-uint8 send_command_ISR(uint8 command, uint32 argument);
+uint8 send_command_ISR(uint8 command, uint32 idata argument);
 uint8 read_block_ISR(uint16 number_of_bytes, uint8 xdata * array);
 uint32 Find_Next_Clus_ISR(uint32 Cluster_num, uint8 xdata * array_name);
 uint32 First_Sector_ISR(uint32 Cluster_num);
 //void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow;
+void Timeout_Start(void);
 
+extern uint8 idata SecPerClus_g;
 extern uint8 xdata block_data_1[512];
 extern uint8 xdata block_data_2[512];
 

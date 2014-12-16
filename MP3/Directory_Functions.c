@@ -41,12 +41,10 @@ uint16  Print_Directory(uint32 Sector_num, uint8 xdata * array_in)
       max_sectors=SecPerClus_g;
    }
    Sector=Sector_num;
-   AMBERLED=0;
    nCS0=0;
    error_flag=send_command(17,(Sector<<SDtype_g));
    if(error_flag==NO_ERRORS) error_flag=read_block(512, values);
    nCS0=1;
-   AMBERLED=1;
    if(error_flag==NO_ERRORS)
    {
      do
@@ -330,19 +328,21 @@ uint32 read32(uint16 offset, uint8 xdata * array_name)
 //  that are declared at the top of this file.
 uint8 mount_drive(uint8 xdata * array_name)
 {
-	uint32 block_num, TotSec32, RootClus, FATSz32, FATSz, DataSec, CountofClus, TotSec, RelSec;
+	uint32 idata block_num, TotSec32, RootClus, FATSz32, FATSz, DataSec, CountofClus, TotSec, RelSec;
 	uint8 error_val, value8, NumFATs;
-	uint16 offset, RsvdSecCnt, RootEntCnt, TotSec16, FATSz16;
+	uint16 idata offset, RsvdSecCnt, RootEntCnt, TotSec16, FATSz16;
 
 	AUXR = 0x0C; // Allows use of 1 KB of RAM
 	block_num = 0;
 	RelSec = 0;
 	nCS0 = 0;
+	GREENLED = 0;
 	error_val = send_command(CMD17, block_num); //sending command to read the sector at 0.
 	if(error_val == NO_ERRORS)
 	{
 		
 		error_val = read_block(512, array_name);//reading in data.
+		GREENLED = 1;
 		if(error_val == NO_ERRORS)
 		{
 			offset = 0;

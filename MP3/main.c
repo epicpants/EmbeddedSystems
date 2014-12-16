@@ -32,9 +32,10 @@ void main(void)
  	uint16 idata entry_number;
 
 	AUXR = 0x0C; // Allows use of 1 KB of RAM
+	BIT_EN = 0; // Disables the MP3 decoder.
 	UART_INIT();
 	printf("Initializing SPI Master to 400 KHz...\n");
-	YELLOWLED = 0;
+
 	SPI_Master_Init(400000UL);
 	printf("Initializing SD Card...\n");
 	SD_Card_init();
@@ -56,11 +57,9 @@ void main(void)
 
 
 	
-	GREENLED = 0;
 	while(1)
 	{
 		num_entries = Print_Directory(current_directory, block_data_1);
-		YELLOWLED = 0;
 		printf("Enter entry number: ");
 		entry_number = (uint16) long_serial_input();
 		if(entry_number <= num_entries)

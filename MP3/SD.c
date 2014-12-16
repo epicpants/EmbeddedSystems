@@ -252,36 +252,30 @@ DESC:  Reads a block of SD Card memory
 INPUT: number of bytes to be read, array of bytes to put read block in
 RETURNS: one byte error status (NO_ERRORS, TIMEOUT_ERROR, BAD_VALUE)
 		populates array with number_of_bytes bytes of SD Card memory
-CAUTION: 
+CAUTION: Current use of receive response without pointer may not work correctly.
 ************************************************************************/
 uint8 read_block(uint16 number_of_bytes, uint8 xdata * array)
 {
-	uint16 index;
-	uint16 timeout;
-	uint16 SPI_Return;
+	uint16 idata index;
+	uint16 idata timeout;
+	uint16 idata SPI_Return;
 	uint8 errorStatus;
 	uint8 errorFlag;
 	uint8 dat;
-	uint8 array_out[5];
 
 	errorStatus = 0;
 	errorFlag = 0;
 	
-	//printf("Beginning read_block...\n");
-	for(index = 0; index < 5; index++)
-	{
-		array_out[index] = 0;
-	}
 	//printf("Waiting for R1 response...\n");
-	errorFlag = receive_response(SIZE_OF_R1, array_out); //Receive R1 response:
+	errorFlag = receive_response(SIZE_OF_R1, &dat); //Receive R1 response:
 
 	if(errorFlag != NO_ERRORS)
 	{
 		errorStatus = errorFlag;
 	}
-	else if(array_out[0] != NO_ERRORS)
+	else if(dat != NO_ERRORS)
 	{
-		errorStatus = array_out[0];
+		errorStatus = dat;
 	}
 
 	if(errorStatus == NO_ERRORS)
@@ -292,7 +286,7 @@ uint8 read_block(uint16 number_of_bytes, uint8 xdata * array)
 		{
 			SPI_Return = SPI_Transfer(0xFF);
 			errorFlag = (SPI_Return >> 8);
-			dat = (SPI_Return & 0x00FF);
+			dat = (uint8)(SPI_Return & 0x00FF);
 			timeout++;
 		} while((timeout != 0) && (dat == 0xFF) && (errorFlag == NO_ERRORS));
 
@@ -323,7 +317,7 @@ uint8 read_block(uint16 number_of_bytes, uint8 xdata * array)
 				if(errorFlag != NO_ERRORS)
 				{
 					errorStatus = errorFlag;
-					printf("Error received: %2.2bx",errorStatus); 
+					//printf("Error received: %2.2bx",errorStatus); 
 				}
 				else
 				{

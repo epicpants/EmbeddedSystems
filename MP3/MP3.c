@@ -4,16 +4,16 @@
 #include "SPI.h"
 #include "SD.h"
 
-/*				Globals					*/
-uint32 cluster_g, sector_g;
-uint16 index1_g, index2_g;
-uint8 num_sectors_g;
-player_state player_state_g;
-player_status player_status_g;
+#define RELOAD_10MS (65536 - 10 * (OSC_FREQ / (OSC_PER_INST * 1000)))
+#define TIMEOUT_RELOAD_H ( RELOAD_10MS >> 8)
+#define TIMEOUT_RELOAD_L (0x00FF & RELOAD_10MS)
 
-void SPI_Transfer_End(void)
-{
-}
+/*				Globals					*/
+uint32 idata cluster_g, sector_g;
+uint16 idata index1_g, index2_g;
+uint8 num_sectors_g;
+player_state idata player_state_g;
+player_status idata player_status_g;
 
 void Play_MP3_File(uint32 first_cluster_of_song)
 {
@@ -79,15 +79,99 @@ void Timer_2_Interrupt_Init(uint8 tick_ms)
 void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 {
 	TF2 = 0;
-	//Timeout_start(); // Using Timer 0
+	Timeout_Start(); // Using Timer 0
 	// Stuff goes here ?
 
 
 	switch(player_state_g)
 	{
 		case DATA_SEND_1:
+			if(DATA_REQ == 0) //if DATA_REQ is inactive:
+			{
+				SPI_Transfer_End();
+				BIT_EN = 0;
+				if(index2_g >= 512)
+				{
+					if(num_sectors_g >= SecPerClus_g)
+						player_state_g = FIND_CLUSTER_2;
+					else
+						player_state_g = LOAD_BUFFER_2;
+				}
+				else
+				{
+					player_state_g = DATA_IDLE_1;
+				}
+			}
+			else
+			{
+				if(index1_g >= 512)
+				{
+					if(index2_g >= 512) //If both buffers are empty:
+					{
+						if(num_sectors_g >= SecPerClus_g)
+							player_state_g = FIND_CLUSTER_2;
+						else
+							player_state_g = LOAD_BUFFER_2;
+					}
+					else
+					{
+						player_state_g = DATA_SEND_2;
+					}
+				}
+				else //Data req == ACTIVE && buffer1 has data to send && have not timed out:
+				{    //transfer data until time is up or data_req goes inactive:
+					while((TF0 == 0) && (DATA_REQ == 1) && (index1_g < 512))
+					{
+						SPI_Transfer_Fast(block_data_1[index1_g]);
+						index1_g++;
+					}
+					SPI_Transfer_End();
+				}
+			}
 			break;
 		case DATA_SEND_2:
+			if(DATA_REQ == 0) //if DATA_REQ is inactive
+			{
+				SPI_Transfer_End();
+				BIT_EN = 0;
+				if(index1_g == 512)
+				{
+					if(num_sectors_g >= SecPerClus_g)
+						player_state_g = FIND_CLUSTER_1;
+					else
+						player_state_g = LOAD_BUFFER_1;
+				}
+				else
+				{
+					player_state_g = DATA_IDLE_2;
+				}
+			}
+			else
+			{
+				if(index2_g >= 512)
+				{
+					if(index1_g >= 512)
+					{
+						if(num_sectors_g >= SecPerClus_g)
+							player_state_g = FIND_CLUSTER_1;
+						else	
+							player_state_g = LOAD_BUFFER_1;	
+					}
+					else
+					{
+						player_state_g = DATA_SEND_1;
+					}
+				}
+				else //Data req == ACTIVE && buffer1 has data to send && have not timed out:
+				{    //transfer data until time is up or data_req goes inactive:
+					while((TF0 == 0) && (DATA_REQ == 1) && (index2_g < 512))
+					{
+						SPI_Transfer_Fast(block_data_2[index2_g]);
+						index2_g++;
+					}
+					SPI_Transfer_End();
+				}
+			}
 			break;
 		case LOAD_BUFFER_1:
 			SPI_Transfer_End();
@@ -169,10 +253,10 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 	}
 }
 
-uint8 send_command_ISR(uint8 command, uint32 argument)
+uint8 send_command_ISR(uint8 command, uint32 idata argument)
 {
 	uint8 SPI_send, return_val;
-	uint16 SPI_return;
+	uint16 idata SPI_return;
 	return_val = NO_ERRORS;
 	if(command < 64) // less than 7 bits
 	{
@@ -270,13 +354,13 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 
 uint8 read_block_ISR(uint16 number_of_bytes, uint8 xdata * array)
 {
-	uint16 index;
-	uint16 timeout;
-	uint16 SPI_Return;
-	uint8 errorStatus;
-	uint8 errorFlag;
-	uint8 dat;
-	uint8 array_out[5];
+	uint16 idata index;
+	uint16 idata timeout;
+	uint16 idata SPI_Return;
+	uint8 idata errorStatus;
+	uint8 idata errorFlag;
+	uint8 idata dat;
+	uint8 idata array_out[5];
 
 	errorStatus = 0;
 	errorFlag = 0;
@@ -337,7 +421,7 @@ uint8 read_block_ISR(uint16 number_of_bytes, uint8 xdata * array)
 				if(errorFlag != NO_ERRORS)
 				{
 					errorStatus = errorFlag;
-					printf("Error received: %2.2bx",errorStatus); 
+					//printf("Error received: %2.2bx",errorStatus); 
 				}
 				else
 				{
@@ -361,10 +445,10 @@ uint8 read_block_ISR(uint16 number_of_bytes, uint8 xdata * array)
 //The first sector of that cluster is loaded into array_name.
 uint32 Find_Next_Clus_ISR(uint32 Cluster_num, uint8 xdata * array_name)
 {
-	uint32 returnVal;
-	uint32 thisFatSecNum;
-	uint32 thisFatEntOffset;
-	uint32 FAToffset;
+	uint32 idata returnVal;
+	uint32 idata thisFatSecNum;
+	uint32 idata thisFatEntOffset;
+	uint32 idata FAToffset;
 	uint8 errorVal;
 	
 	errorVal = 0;
@@ -377,7 +461,7 @@ uint32 Find_Next_Clus_ISR(uint32 Cluster_num, uint8 xdata * array_name)
 	errorVal = send_command(CMD17, thisFatSecNum);
 	if(errorVal != NO_ERRORS)
 	{
-		printf("Error sending CMD17 in Find_Next_Clus: %2.2BX.\n", errorVal);
+		//printf("Error sending CMD17 in Find_Next_Clus: %2.2BX.\n", errorVal);
 		nCS0 = 1;
 		return 0;
 	}
@@ -386,7 +470,7 @@ uint32 Find_Next_Clus_ISR(uint32 Cluster_num, uint8 xdata * array_name)
 	nCS0 = 1;
 	if(errorVal != NO_ERRORS)
 	{
-		printf("Error reading block in Find_Next_Clus.\nSector Number %i.\nErrorVal: %2.2BX.\n", thisFatSecNum, errorVal);
+		//printf("Error reading block in Find_Next_Clus.\nSector Number %i.\nErrorVal: %2.2BX.\n", thisFatSecNum, errorVal);
 		return 0;
 	}
 	
@@ -410,7 +494,7 @@ uint32 Find_Next_Clus_ISR(uint32 Cluster_num, uint8 xdata * array_name)
 //If cluster_num is 0 it will return FirstRootDirSec_g.
 uint32 First_Sector_ISR(uint32 Cluster_num)
 {
-	uint32 returnVal;
+	uint32 idata returnVal;
 
 	if(Cluster_num == 0)
 	{
@@ -422,4 +506,17 @@ uint32 First_Sector_ISR(uint32 Cluster_num)
 	}
 
 	return returnVal;
+}
+
+//This function will start timer0 for a 10ms interval.
+void Timeout_Start(void)
+{
+	TMOD &= 0xF0; // Clear timer0 setup.
+	TMOD |= 0x01; // Set timer 0 to 16 bit mode.
+
+	ET0 = 0; //Not using timer interrupt.
+	TH0 = TIMEOUT_RELOAD_H;
+	TL0 = TIMEOUT_RELOAD_L;
+	TF0 = 0; //Clear overflow flag.
+	TR0 = 1; //Start timer.
 }

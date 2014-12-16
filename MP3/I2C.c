@@ -25,7 +25,7 @@ void I2C_Delay_Start(void)
 
 	ET1 = 0; // No interrupts
 	TH1 = I2C_RELOAD_H;
-	TH2 = I2C_RELOAD_L;
+	TL1 = I2C_RELOAD_L;
 	TF1 = 0; // clear overflow flag
 	TR1 = 1; // Start the timer
 	return;

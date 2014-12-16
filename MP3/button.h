@@ -28,4 +28,6 @@ typedef struct
 //This function will update the status of the button.	
 void update_button(button * myButton, uint8 pin_status);
 
+//This function initializes the button states to SW_NOT_PRESSED.
+void init_button(button * btn);
 #endif
