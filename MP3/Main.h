@@ -54,6 +54,10 @@ typedef unsigned long uint32;
 #define INTERRUPT_Timer_1_Overflow 3
 #define INTERRUPT_Timer_2_Overflow 5
 
+#define RELOAD_10MS (65536 - 10 * (OSC_FREQ / (OSC_PER_INST * 1000)))
+#define TIMEOUT_RELOAD_H ( RELOAD_10MS >> 8)
+#define TIMEOUT_RELOAD_L (0x00FF & RELOAD_10MS)
+
 extern uint32 idata FirstDataSec_g, StartofFAT_g, FirstRootDirSec_g, RootDirSecs_g;
 extern uint16 idata BytesPerSec_g;
 extern uint8 idata SDtype_g, SecPerClus_g, FATtype_g, BytesPerSecShift_g, FATshift_g;

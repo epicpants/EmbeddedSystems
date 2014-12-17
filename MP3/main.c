@@ -5,6 +5,7 @@
  * allows user to view SD Card memory contents via UART in 512 byte blocks
  */
 #include "main.h"
+#include "MP3.h"
 #include "UART.h"
 #include <stdio.h>
 #include "SD.h"
@@ -12,9 +13,9 @@
 #include "Serial_In.h"
 #include "print.h"
 #include "Directory_Functions.h"
-#include "button.h"
 #include "I2C.h"
 #include "STA013.h"
+
 
 
 
@@ -39,8 +40,8 @@ void main(void)
 	SPI_Master_Init(400000UL);
 	printf("Initializing SD Card...\n");
 	SD_Card_init();
-	printf("Initializing SPI Master to 8 MHz\n");
-	error_val = SPI_Master_Init(8000000UL);
+	printf("Initializing SPI Master to 5 MHz\n");
+	error_val = SPI_Master_Init(5000000UL);
 	printf("SPI Init error_val: %2.2BX\n", error_val);
 
 	printf("Mounting drive...\n");
@@ -54,8 +55,6 @@ void main(void)
 		printf("Initialization of the MP3 decoder failed.\n");
 		REDLED = 0;
 	}
-
-
 	
 	while(1)
 	{
@@ -72,8 +71,9 @@ void main(void)
 			}
 			else
 			{
-				Open_File(ent_clus, block_data_1);
+				Play_MP3_File(ent_clus);
 			}
 		}
+				
 	}
 }

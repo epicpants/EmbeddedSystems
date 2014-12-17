@@ -336,13 +336,11 @@ uint8 mount_drive(uint8 xdata * array_name)
 	block_num = 0;
 	RelSec = 0;
 	nCS0 = 0;
-	GREENLED = 0;
 	error_val = send_command(CMD17, block_num); //sending command to read the sector at 0.
 	if(error_val == NO_ERRORS)
 	{
 		
 		error_val = read_block(512, array_name);//reading in data.
-		GREENLED = 1;
 		if(error_val == NO_ERRORS)
 		{
 			offset = 0;
@@ -463,7 +461,7 @@ uint8 mount_drive(uint8 xdata * array_name)
 
 //This function will print the sectors of data starting with the first sector of Cluster. 
 //It will initialize array_in.
-uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
+/*uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 {
 	uint8 error_val, SectorOffset, stop, input;
 	uint32 StartingSector, cluster_num;
@@ -511,4 +509,4 @@ uint8 Open_File(uint32 Cluster, uint8 xdata * array_in)
 	
 	nCS0 = 1;
 	return error_val;
-}
+}*/

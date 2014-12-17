@@ -44,7 +44,7 @@ uint16 read16(uint16 offset, uint8 xdata * array_name);
 uint32 read32(uint16 offset, uint8 xdata * array_name);
 uint8 mount_drive(uint8 xdata * array_name); 
 
-uint8 Open_File(uint32 Cluster, uint8 xdata * array_in);
+//uint8 Open_File(uint32 Cluster, uint8 xdata * array_in);
 
 
 #endif
