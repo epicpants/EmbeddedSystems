@@ -1,3 +1,4 @@
+#include "print.h"
 #include "main.h"
 #include "MP3.h"
 #include "Directory_Functions.h"
@@ -28,15 +29,16 @@ void Play_MP3_File(uint32 first_sng_clus)
 
 	send_command(CMD17, (sector_g + num_sectors_g));
 	read_block(512, block_data_1);
+	//print_memory_block(512, block_data_1);
 	nCS0 = 1;
 	num_sectors_g++;
-	//index1_g = 0;
 	
 	// Load Buffer 2
 	BIT_EN = 0;
 	nCS0 = 0;
 	send_command(CMD17, (sector_g + num_sectors_g));
 	read_block(512, block_data_2);
+	//print_memory_block(512, block_data_2);
 	nCS0 = 1;
 	num_sectors_g++;
 
@@ -69,9 +71,10 @@ void Timer_2_Interrupt_Init(uint8 tick_ms)
 	uint16 Timer_2_Reload;
 	uint8 Timer_2_Reload_H, Timer_2_Reload_L;
 	
+	TR2 = 0;
 	Timer_2_Reload = (uint16) ((65536) - ((OSC_FREQ * tick_ms) / (OSC_PER_INST * 1000UL)));
 	Timer_2_Reload_H = (uint8) (Timer_2_Reload >> 8);
-	Timer_2_Reload_L = (uint8) (Timer_2_Reload & 0xFF);
+	Timer_2_Reload_L = (uint8) (Timer_2_Reload & 0x00FF);
 	TH2 = Timer_2_Reload_H;
 	RCAP2H = Timer_2_Reload_H;
 	TL2 = Timer_2_Reload_L;
@@ -92,10 +95,10 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 	switch(player_state_g)
 	{
 		case DATA_SEND_1:
-			GREENLED = 0;
+			GREENLED2 = 0;
 			if(DATA_REQ == 0) //if DATA_REQ is inactive:
 			{
-				SPI_Transfer_End();
+				//SPI_Transfer_End();
 				BIT_EN = 0;
 				if(index2_g >= 512)
 				{
@@ -128,6 +131,7 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 				else //Data req == ACTIVE && buffer1 has data to send && have not timed out:
 				{    //transfer data until time is up or data_req goes inactive:
 					BIT_EN = 1;
+					SPDAT = 0xFF;
 					while((TF0 == 0) && (DATA_REQ == 1) && (index1_g < 512))
 					{
 	
@@ -139,9 +143,10 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 					//SPI_Transfer_End();
 				}
 			}
-			GREENLED = 1;
+			GREENLED2 = 1;
 			break;
 		case DATA_SEND_2:
+			REDLED2 = 0;
 			if(DATA_REQ == 0) //if DATA_REQ is inactive
 			{
 				//SPI_Transfer_End();
@@ -177,6 +182,7 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 				else //Data req == ACTIVE && buffer1 has data to send && have not timed out:
 				{    //transfer data until time is up or data_req goes inactive:
 					BIT_EN = 1;
+					SPDAT = 0xFF;
 					while((TF0 == 0) && (DATA_REQ == 1) && (index2_g < 512))
 					{
 						SPI_Transfer_Fast(block_data_2[index2_g]);
@@ -186,30 +192,38 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 					//SPI_Transfer_End();
 				}
 			}
+			REDLED2 = 1;
 			break;
 		case LOAD_BUFFER_1:
-			YELLOWLED = 0;
+			GREENLED = 0;
 			//SPI_Transfer_End();
 			BIT_EN = 0;
 			nCS0 = 0;
 			send_command_ISR(CMD17, (sector_g + num_sectors_g));
+			//SPDAT = 0xFF;
+			SPDAT = 0xFF;
 			read_block_ISR(512, block_data_1);
 			nCS0 = 1;
 			num_sectors_g++;
 			index1_g = 0;
 			player_state_g = DATA_IDLE_2;
-			YELLOWLED = 1;
+			//GREENLED = 1;
     		break;
 		case LOAD_BUFFER_2:
 			//SPI_Transfer_End();
+			YELLOWLED = 0;
 			BIT_EN = 0;
 			nCS0 = 0;
 			send_command_ISR(CMD17, (sector_g + num_sectors_g));
+			//nCS0 = 1;
+			SPDAT = 0xFF;
+			//SPDAT = 0xFF;
 			read_block_ISR(512, block_data_2);
 			nCS0 = 1;
 			num_sectors_g++;
 			index2_g = 0;
 			player_state_g = DATA_IDLE_1;
+			//YELLOWLED = 1;
 			break;
 		case FIND_CLUSTER_1:
 			AMBERLED = 0;
@@ -227,10 +241,11 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 				player_status_g = END_OF_SONG;
 				player_state_g = DATA_IDLE_2;
 			}
-			AMBERLED = 1;
+			//AMBERLED = 1;
 			break;
 		case FIND_CLUSTER_2:
 			//SPI_Transfer_End();
+			BLUELED = 0;
 			BIT_EN = 0;
 			cluster_g = Find_Next_Clus_ISR(cluster_g, block_data_2);
 			if(cluster_g != EOFILE)
@@ -244,6 +259,7 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 				player_status_g = END_OF_SONG;
 				player_state_g = DATA_IDLE_1;
 			}
+			//BLUELED = 1;
 			break;
 		case DATA_IDLE_1:
 			REDLED = 0;
@@ -252,14 +268,16 @@ void Timer2_ISR(void) interrupt INTERRUPT_Timer_2_Overflow
 			{
 				player_state_g = DATA_SEND_1;
 			}
-			REDLED = 1;
+			//REDLED = 1;
 			break;
 		case DATA_IDLE_2:
+			YELLOWLED2 = 0;
 			while(DATA_REQ == INACTIVE && TF0 == 0);
 			if(TF0 == 0) // Did not timeout, means DATA_REQ is active
 			{
 				player_state_g = DATA_SEND_2;
 			}
+			//YELLOWLED2 = 1;
 			break;
 	}
 
@@ -284,7 +302,7 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 		 * Byte 1
 		 ********/
 		SPI_send = command | 0x40;
-		SPI_return = SPI_Transfer(SPI_send);
+		SPI_return = SPI_Transfer_Fast(SPI_send);
 
 		/********
 		 * Byte 2
@@ -292,7 +310,7 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 		if((SPI_return & 0xF000) == 0) // Check errors, 0 means no errors
 		{
 			SPI_send = argument >> 24; // MSB of argument
-			SPI_return = SPI_Transfer(SPI_send);
+			SPI_return = SPI_Transfer_Fast(SPI_send);
 		}
 		else
 		{
@@ -306,7 +324,7 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 		{
 			argument = argument & 0x00FFFFFF;
 			SPI_send = argument >> 16;
-			SPI_return = SPI_Transfer(SPI_send);
+			SPI_return = SPI_Transfer_Fast(SPI_send);
 		}
 		else
 		{
@@ -320,7 +338,7 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 		{
 			argument = argument & 0x0000FFFF;
 			SPI_send = argument >> 8;
-			SPI_return = SPI_Transfer(SPI_send);
+			SPI_return = SPI_Transfer_Fast(SPI_send);
 		}
 		else
 		{
@@ -334,7 +352,7 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 		{
 			argument = argument & 0x000000FF;
 			SPI_send = argument; // LSB of argument
-			SPI_return = SPI_Transfer(SPI_send);
+			SPI_return = SPI_Transfer_Fast(SPI_send);
 		}
 		else
 		{
@@ -346,11 +364,11 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 		 ********/
 		if((return_val == NO_ERRORS) && ((SPI_return & 0xF000) == 0))
 		{
-			if(command == 0) // CMD0
+			if(command == CMD0) // CMD0
 			{
 				SPI_send = 0x95; // CMD0 CRC
 			}
-			else if(command == 8) // CMD8
+			else if(command == CMD8) // CMD8
 			{
 				SPI_send = 0x87; // CMD8 CRC
 			}
@@ -358,7 +376,7 @@ uint8 send_command_ISR(uint8 command, uint32 argument)
 			{
 				SPI_send = 0x01; // Don't care
 			}
-			SPI_return = SPI_Transfer(SPI_send);
+			SPI_return = SPI_Transfer_Fast(SPI_send);
 		}
 		else
 		{
@@ -536,10 +554,13 @@ void Timeout_Start(void)
 	TMOD &= 0xF0; // Clear timer0 setup.
 	TMOD |= 0x01; // Set timer 0 to 16 bit mode.
 	ET0 = 0; //Not using timer interrupt.
-	reload_val = (65536 - 10 * (OSC_FREQ / (OSC_PER_INST * 1000)));
+	reload_val = (uint16)(65536 - 8 * (OSC_FREQ / (OSC_PER_INST * 1000UL)));
 	//printf("reload_val: %u\n", reload_val);
-	TH0 = (reload_val >> 8);
-	TL0 = (reload_val & 0x00FF);
+	TH0 = (uint8)(reload_val >> 8);
+	TL0 = (uint8)(reload_val & 0x00FF);
 	TF0 = 0; //Clear overflow flag.
 	TR0 = 1; //Start timer.
 }
+
+
+

@@ -32,8 +32,9 @@ void main(void)
 	uint16 idata num_entries;
  	uint16 idata entry_number;
 
+	REDLED = 0;
 	AUXR = 0x0C; // Allows use of 1 KB of RAM
-	BIT_EN = 0; // Disables the MP3 decoder.
+	//BIT_EN = 0; // Disables the MP3 decoder.
 	UART_INIT();
 	printf("Initializing SPI Master to 400 KHz...\n");
 
@@ -55,6 +56,7 @@ void main(void)
 		printf("Initialization of the MP3 decoder failed.\n");
 		REDLED = 0;
 	}
+	REDLED = 1;
 	
 	while(1)
 	{

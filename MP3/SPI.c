@@ -252,11 +252,12 @@ uint8 receive_response(uint8 number_of_bytes, uint8 * array_name)
 	return return_val;
 }
 //This function will transfer send byte as soon as a previous transfer is finished.
-void SPI_Transfer_Fast(uint8 send_value)
+uint8 SPI_Transfer_Fast(uint8 send_value)
 {
 	while(((SPSTA & 0x80) != 0x80)); //Block while previous transfer is running.
 
 	SPDAT = send_value;
+	return NO_ERRORS;
 }
 	
 //This function will block until a previous transfer is complete.
