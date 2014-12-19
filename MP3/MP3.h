@@ -8,6 +8,8 @@
 
 
 void Play_MP3_File(uint32 first_sng_clus);
+void Timer_2_Interrupt_Init(uint8 tick_ms);
+void Timeout_Start(void);
 
 extern uint8 idata SecPerClus_g;
 extern uint8 xdata block_data_1[512];
