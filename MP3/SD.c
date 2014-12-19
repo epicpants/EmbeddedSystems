@@ -336,3 +336,36 @@ uint8 read_block(uint16 number_of_bytes, uint8 xdata * array)
 	//printf("Exiting read_block, error status is %2.2bx.\n",errorStatus); 
 	return errorStatus;
 }
+
+void read_block_fast(uint16 num_bytes, uint8 xdata * array)
+{
+	uint16 data index;
+	uint8 data dat;
+
+	
+	//printf("Waiting for R1 response...\n");
+	receive_response(SIZE_OF_R1, &dat); //Receive R1 response:
+
+	//printf("Got a good R1 response, now waiting for data start token...\n");
+	do
+	{
+		dat = SPI_Transfer_Fast_Read(0xFF);
+	} while((dat == 0xFF));
+
+	//printf("Got the data start token, now reading in data.\n");
+	for(index = 0; (index < num_bytes); index++) //Reading in data:
+	{
+		array[index] = SPI_Transfer_Fast_Read(0xFF);		
+	}
+
+	//printf("Received data, now sending three more bytes...\n");
+	for(index = 0; index < 3; index++) //Discarding checksum (first two bytes)
+	{
+		SPI_Transfer_Fast(0xFF);
+	}
+		  	
+		
+	//printf("Exiting read_block, error status is %2.2bx.\n",errorStatus); 
+	return;
+
+}

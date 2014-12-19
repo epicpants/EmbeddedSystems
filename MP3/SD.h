@@ -35,5 +35,6 @@
 
 uint8 SD_Card_init();
 uint8 read_block(uint16 number_of_bytes, uint8 xdata * array);
+void read_block_fast(uint16 num_bytes, uint8 xdata * array);
 
 #endif

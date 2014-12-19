@@ -19,7 +19,7 @@ uint8 SPI_Master_Init(uint32 clock_rate);
 uint16 SPI_Transfer(uint8 send_value);
 uint8 send_command(uint8 command, uint32 argument);
 uint8 receive_response(uint8 number_of_bytes, uint8 * array_name);
-uint8 SPI_Transfer_Fast(uint8 send_value);
-void SPI_Transfer_End(void); //blocks until previous transfer is complete.
+void SPI_Transfer_Fast(uint8 send_data);
+uint8 SPI_Transfer_Fast_Read(uint8 send_data);
 
 #endif

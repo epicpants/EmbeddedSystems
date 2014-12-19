@@ -29,12 +29,12 @@
 // Port 0
 /*sbit P0_0 = P0^0;
 sbit P0_1 = P0^1;
-sbit P0_2 = P0^2;
-sbit P0_3 = P0^3;
-sbit P0_4 = P0^4;
-sbit P0_5 = P0^5;
-sbit P0_6 = P0^6;
-sbit P0_7 = P0^7;*/ 
+sbit P0_2 = P0^2;*/
+sbit GREENLED2 = P0^3;
+sbit BLUELED = P0^4;
+sbit YELLOWLED2 = P0^5;
+sbit REDLED2 = P0^6; 
+//sbit P0_7 = P0^7;
 
 // Port 1
 sbit SCL = P1^0;

@@ -32,17 +32,18 @@ void main(void)
 	uint16 idata num_entries;
  	uint16 idata entry_number;
 
+	RESET = 0;
 	REDLED = 0;
 	AUXR = 0x0C; // Allows use of 1 KB of RAM
-	//BIT_EN = 0; // Disables the MP3 decoder.
+	CKCON0 |= 0x01;
 	UART_INIT();
 	printf("Initializing SPI Master to 400 KHz...\n");
 
 	SPI_Master_Init(400000UL);
 	printf("Initializing SD Card...\n");
 	SD_Card_init();
-	printf("Initializing SPI Master to 5 MHz\n");
-	error_val = SPI_Master_Init(5000000UL);
+	printf("Initializing SPI Master to 15 MHz\n");
+	error_val = SPI_Master_Init(15000000UL);
 	printf("SPI Init error_val: %2.2BX\n", error_val);
 
 	printf("Mounting drive...\n");

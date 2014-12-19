@@ -263,13 +263,13 @@ uint32 Find_Next_Clus(uint32 Cluster_num, uint8 xdata * array_name)
 		return 0;
 	}
 
-	errorVal = read_block(BytesPerSec_g, array_name);
+	read_block_fast(BytesPerSec_g, array_name);
 	nCS0 = 1;
-	if(errorVal != NO_ERRORS)
+	/*if(errorVal != NO_ERRORS)
 	{
 		printf("Error reading block in Find_Next_Clus.\nSector Number %i.\nErrorVal: %2.2BX.\n", thisFatSecNum, errorVal);
 		return 0;
-	}
+	}*/
 	
 	FAToffset = Cluster_num * FATtype_g;  //FATtype_g should be 4 for FAT32.
 	thisFatEntOffset = FAToffset % BytesPerSec_g;
